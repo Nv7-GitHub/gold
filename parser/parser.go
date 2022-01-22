@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/Nv7-Github/gold/tokenizer"
@@ -10,6 +9,10 @@ import (
 type Parser struct {
 	tok   *tokenizer.Tokenizer
 	Nodes []Node
+}
+
+func (p *Parser) getError(pos *tokenizer.Pos, format string, args ...interface{}) error {
+	return fmt.Errorf("%s: %s", pos, fmt.Sprintf(format, args...))
 }
 
 func NewParser(tok *tokenizer.Tokenizer) *Parser {
@@ -22,7 +25,7 @@ func (p *Parser) Parse() error {
 	for !p.tok.IsEnd() {
 		n, err := p.parseStmt()
 		if err != nil {
-			return fmt.Errorf("%s: %s", p.tok.CurrTok().Pos, err)
+			return err
 		}
 		p.Nodes = append(p.Nodes, n)
 	}
@@ -41,7 +44,7 @@ func (p *Parser) parseExpr() (Expression, error) {
 		return p.parseIdentifier()
 
 	default:
-		return nil, errors.New("unknown token")
+		return nil, p.getError(p.tok.CurrTok().Pos, "unknown token")
 	}
 }
 
@@ -49,10 +52,23 @@ func (p *Parser) parseStmt() (Statement, error) {
 	// Get instruction
 	tok := p.tok.CurrTok()
 	if tok.Type != tokenizer.Identifier {
-		return nil, errors.New("expected instruction")
+		return nil, p.getError(p.tok.CurrTok().Pos, "expected instruction")
 	}
 	p.tok.Eat()
 
-	// TODO: Get args, check types, create node
-	return nil, errors.New("statements not implemented yet")
+	args := []Expression{}
+	for !p.tok.IsEnd() {
+		if p.tok.CurrTok().Type == tokenizer.End {
+			p.tok.Eat()
+			break
+		}
+
+		expr, err := p.parseExpr()
+		if err != nil {
+			return nil, err
+		}
+		args = append(args, expr)
+	}
+
+	return p.getStmt(tok.Pos, tok.Value, args)
 }

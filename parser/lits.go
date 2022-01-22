@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"errors"
 	"strconv"
 
 	"github.com/Nv7-Github/gold/tokenizer"
@@ -23,7 +22,7 @@ func (c *Const) Type() types.Type {
 func (p *Parser) parseNumberLiteral() (Expression, error) {
 	tok := p.tok.CurrTok()
 	if tok.Type != tokenizer.NumberLiteral {
-		return nil, errors.New("expected number literal")
+		return nil, p.getError(tok.Pos, "expected number literal")
 	}
 	p.tok.Eat()
 	v, err := strconv.Atoi(tok.Value)
@@ -42,7 +41,7 @@ func (p *Parser) parseNumberLiteral() (Expression, error) {
 func (p *Parser) parseStringLiteral() (Expression, error) {
 	tok := p.tok.CurrTok()
 	if tok.Type != tokenizer.StringLiteral {
-		return nil, errors.New("expected string literal")
+		return nil, p.getError(tok.Pos, "expected string literal")
 	}
 	p.tok.Eat()
 	return &Const{
@@ -57,7 +56,7 @@ func (p *Parser) parseStringLiteral() (Expression, error) {
 func (p *Parser) parseIdentifier() (Expression, error) {
 	tok := p.tok.CurrTok()
 	if tok.Type != tokenizer.Identifier {
-		return nil, errors.New("expected identifier")
+		return nil, p.getError(tok.Pos, "expected identifier")
 	}
 	p.tok.Eat()
 	return &Const{

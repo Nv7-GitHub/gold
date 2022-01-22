@@ -19,7 +19,8 @@ func main() {
 	parser := parser.NewParser(tok)
 	err := parser.Parse()
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return
 	}
 
 	for _, node := range parser.Nodes {
