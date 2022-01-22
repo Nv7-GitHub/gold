@@ -28,20 +28,30 @@ func (t *Tokenizer) Tokenize() {
 					Value: string(c),
 					Pos:   t.stream.CodePos(),
 				})
+				t.stream.Eat(1)
 			}
 
-		case rune(LParen), rune(RParen), rune(LBrack), rune(RBrack):
+		case rune(LParen), rune(RParen), rune(LBrack), rune(RBrack), rune(LCurly), rune(RCurly):
 			t.Tokens = append(t.Tokens, Token{
 				Type:  Operator,
 				Value: string(c),
 				Pos:   t.stream.CodePos(),
 			})
+			t.stream.Eat(1)
+
+		case ';':
+			t.Tokens = append(t.Tokens, Token{
+				Type:  End,
+				Value: string(c),
+				Pos:   t.stream.CodePos(),
+			})
+			t.stream.Eat(1)
 
 		case '#':
 			t.eatComment()
 
 		default:
-			if unicode.IsLetter(c) {
+			if isLetter(c) {
 				t.Tokens = append(t.Tokens, t.identifier())
 			} else {
 				t.stream.Eat(1)
@@ -103,6 +113,10 @@ func (t *Tokenizer) numLiteral() Token {
 	}
 }
 
+func isLetter(val rune) bool {
+	return val == rune(LBrack) || val == rune(RBrack) || val == rune(LCurly) || val == rune(RCurly) || unicode.IsLetter(val)
+}
+
 func (t *Tokenizer) identifier() Token {
 	pos := t.stream.CodePos()
 	val := ""
@@ -110,7 +124,7 @@ func (t *Tokenizer) identifier() Token {
 		val += string(t.stream.Peek(0))
 
 		c := t.stream.Peek(1)
-		if !unicode.IsLetter(c) {
+		if !isLetter(c) {
 			t.stream.Eat(1)
 			break
 		}

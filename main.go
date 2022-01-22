@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"fmt"
 
+	"github.com/Nv7-Github/gold/parser"
 	"github.com/Nv7-Github/gold/tokenizer"
 )
 
@@ -15,5 +16,13 @@ func main() {
 	tok := tokenizer.NewTokenizer(stream)
 	tok.Tokenize()
 
-	fmt.Println(tok.Tokens)
+	parser := parser.NewParser(tok)
+	err := parser.Parse()
+	if err != nil {
+		panic(err)
+	}
+
+	for _, node := range parser.Nodes {
+		fmt.Println(node)
+	}
 }

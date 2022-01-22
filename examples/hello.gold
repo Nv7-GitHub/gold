@@ -1,6 +1,6 @@
 # Hi
-print "Hello, World!" # Hey
+print "Hello, World!"; # Hey
 
 # ABC
 
-print "Yo"
+print "Yo";

@@ -42,6 +42,7 @@ const (
 	Operator
 	Operation
 	Parenthesis
+	End
 )
 
 var tokenNames = map[TokenType]string{
@@ -50,6 +51,7 @@ var tokenNames = map[TokenType]string{
 	Identifier:    "Identifier",
 	Operator:      "Operator",
 	Parenthesis:   "Parenthesis",
+	End:           "End",
 }
 
 func (t TokenType) String() string {
@@ -84,6 +86,8 @@ const (
 	RParen Paren = ')'
 	LBrack Paren = '['
 	RBrack Paren = ']'
+	LCurly Paren = '{'
+	RCurly Paren = '}'
 )
 
 type Token struct {
