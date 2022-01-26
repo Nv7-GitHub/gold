@@ -90,6 +90,10 @@ const (
 	RCurly Paren = '}'
 )
 
+const Assign = "=>"
+const BlockStart = "do"
+const BlockEnd = "end"
+
 type Token struct {
 	Type  TokenType
 	Value string

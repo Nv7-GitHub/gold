@@ -10,16 +10,12 @@ import (
 type Const struct {
 	*BasicNode
 
-	typ          types.Type
+	Type         types.Type
 	Val          interface{}
 	IsIdentifier bool
 }
 
-func (c *Const) Type() types.Type {
-	return c.typ
-}
-
-func (p *Parser) parseNumberLiteral() (Expression, error) {
+func (p *Parser) parseNumberLiteral() (Node, error) {
 	tok := p.tok.CurrTok()
 	if tok.Type != tokenizer.NumberLiteral {
 		return nil, p.getError(tok.Pos, "expected number literal")
@@ -33,12 +29,12 @@ func (p *Parser) parseNumberLiteral() (Expression, error) {
 		BasicNode: &BasicNode{
 			pos: p.tok.CurrTok().Pos,
 		},
-		typ: types.INT,
-		Val: v,
+		Type: types.INT,
+		Val:  v,
 	}, nil
 }
 
-func (p *Parser) parseStringLiteral() (Expression, error) {
+func (p *Parser) parseStringLiteral() (Node, error) {
 	tok := p.tok.CurrTok()
 	if tok.Type != tokenizer.StringLiteral {
 		return nil, p.getError(tok.Pos, "expected string literal")
@@ -48,12 +44,12 @@ func (p *Parser) parseStringLiteral() (Expression, error) {
 		BasicNode: &BasicNode{
 			pos: p.tok.CurrTok().Pos,
 		},
-		typ: types.STRING,
-		Val: tok.Value,
+		Type: types.STRING,
+		Val:  tok.Value,
 	}, nil
 }
 
-func (p *Parser) parseIdentifier() (Expression, error) {
+func (p *Parser) parseIdentifier() (Node, error) {
 	tok := p.tok.CurrTok()
 	if tok.Type != tokenizer.Identifier {
 		return nil, p.getError(tok.Pos, "expected identifier")
@@ -63,7 +59,7 @@ func (p *Parser) parseIdentifier() (Expression, error) {
 		BasicNode: &BasicNode{
 			pos: p.tok.CurrTok().Pos,
 		},
-		typ:          types.STRING,
+		Type:         types.STRING,
 		Val:          tok.Value,
 		IsIdentifier: true,
 	}, nil

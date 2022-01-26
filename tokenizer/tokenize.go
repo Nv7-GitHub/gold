@@ -50,6 +50,28 @@ func (t *Tokenizer) Tokenize() {
 		case '#':
 			t.eatComment()
 
+		case 'd':
+			if t.stream.Peek(1) == 'o' {
+				t.Tokens = append(t.Tokens, Token{
+					Type:  Operation,
+					Value: "do",
+				})
+				t.stream.Eat(2)
+				break
+			}
+			fallthrough
+
+		case 'e':
+			if t.stream.Peek(1) == 'n' && t.stream.Peek(2) == 'd' {
+				t.Tokens = append(t.Tokens, Token{
+					Type:  Operation,
+					Value: "end",
+				})
+				t.stream.Eat(3)
+				break
+			}
+			fallthrough
+
 		default:
 			if isLetter(c) {
 				t.Tokens = append(t.Tokens, t.identifier())

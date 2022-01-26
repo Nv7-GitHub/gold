@@ -16,14 +16,14 @@ func main() {
 	tok := tokenizer.NewTokenizer(stream)
 	tok.Tokenize()
 
-	parser := parser.NewParser(tok)
-	err := parser.Parse()
+	parse := parser.NewParser(tok)
+	err := parse.Parse()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	for _, node := range parser.Nodes {
+	for _, node := range parse.Nodes {
 		fmt.Println(node)
 	}
 }

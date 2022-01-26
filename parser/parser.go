@@ -21,6 +21,14 @@ func NewParser(tok *tokenizer.Tokenizer) *Parser {
 	}
 }
 
+type ExprStmt struct {
+	Expr Node
+}
+
+func (e *ExprStmt) Pos() *tokenizer.Pos {
+	return e.Expr.Pos()
+}
+
 func (p *Parser) Parse() error {
 	for !p.tok.IsEnd() {
 		n, err := p.parseStmt()
@@ -32,7 +40,7 @@ func (p *Parser) Parse() error {
 	return nil
 }
 
-func (p *Parser) parseExpr() (Expression, error) {
+func (p *Parser) parseExpr() (Node, error) {
 	switch p.tok.CurrTok().Type {
 	case tokenizer.NumberLiteral:
 		return p.parseNumberLiteral()
@@ -43,32 +51,40 @@ func (p *Parser) parseExpr() (Expression, error) {
 	case tokenizer.Identifier:
 		return p.parseIdentifier()
 
+	case tokenizer.Parenthesis:
+		if p.tok.CurrTok().Value == string(tokenizer.LParen) {
+			return p.parseBinaryExpr()
+		}
+		return nil, p.getError(p.tok.CurrTok().Pos, "unknown token: %s", p.tok.CurrTok().Value)
+
 	default:
 		return nil, p.getError(p.tok.CurrTok().Pos, "unknown token")
 	}
 }
 
-func (p *Parser) parseStmt() (Statement, error) {
+func (p *Parser) parseStmt() (Node, error) {
 	// Get instruction
 	tok := p.tok.CurrTok()
-	if tok.Type != tokenizer.Identifier {
-		return nil, p.getError(p.tok.CurrTok().Pos, "expected instruction")
-	}
-	p.tok.Eat()
+	switch tok.Type {
+	case tokenizer.Identifier:
+		return p.parseCall()
 
-	args := []Expression{}
-	for !p.tok.IsEnd() {
-		if p.tok.CurrTok().Type == tokenizer.End {
-			p.tok.Eat()
-			break
-		}
-
+	case tokenizer.Parenthesis:
+		// (a + b) => c;
 		expr, err := p.parseExpr()
 		if err != nil {
 			return nil, err
 		}
-		args = append(args, expr)
-	}
 
-	return p.getStmt(tok.Pos, tok.Value, args)
+		if p.tok.CurrTok().Type == tokenizer.Operation && p.tok.CurrTok().Value == tokenizer.Assign {
+			return p.parseAssign(expr)
+		} else {
+			return &ExprStmt{
+				Expr: expr,
+			}, nil
+		}
+
+	default:
+		return nil, p.getError(tok.Pos, "unexpected token: %s", tok.Value)
+	}
 }
