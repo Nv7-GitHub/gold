@@ -12,6 +12,7 @@ import (
 var code string
 
 func main() {
+	// TODO: Test out blocks, exprs
 	stream := tokenizer.NewStream("hello.gold", code)
 	tok := tokenizer.NewTokenizer(stream)
 	tok.Tokenize()
