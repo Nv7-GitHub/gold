@@ -31,9 +31,9 @@ func (t *Tokenizer) Tokenize() {
 				t.stream.Eat(1)
 			}
 
-		case rune(LParen), rune(RParen), rune(LBrack), rune(RBrack), rune(LCurly), rune(RCurly):
+		case rune(LParen), rune(RParen), rune(LBrack), rune(RBrack):
 			t.Tokens = append(t.Tokens, Token{
-				Type:  Operator,
+				Type:  Parenthesis,
 				Value: string(c),
 				Pos:   t.stream.CodePos(),
 			})
@@ -55,6 +55,7 @@ func (t *Tokenizer) Tokenize() {
 				t.Tokens = append(t.Tokens, Token{
 					Type:  Operation,
 					Value: "do",
+					Pos:   t.stream.CodePos(),
 				})
 				t.stream.Eat(2)
 				break
@@ -66,6 +67,7 @@ func (t *Tokenizer) Tokenize() {
 				t.Tokens = append(t.Tokens, Token{
 					Type:  Operation,
 					Value: "end",
+					Pos:   t.stream.CodePos(),
 				})
 				t.stream.Eat(3)
 				break
@@ -74,7 +76,17 @@ func (t *Tokenizer) Tokenize() {
 
 		default:
 			if isLetter(c) {
-				t.Tokens = append(t.Tokens, t.identifier())
+				ident := t.identifier()
+				t.Tokens = append(t.Tokens, ident)
+				if ident.Value == Else {
+					t.Tokens = append(t.Tokens, Token{
+						Type:  End,
+						Value: ";",
+						Pos:   t.stream.CodePos(),
+					})
+				}
+
+				// FIXME: Less hacky solution than inserting a semicolon after all "else"s
 			} else {
 				t.stream.Eat(1)
 			}
@@ -120,13 +132,12 @@ func (t *Tokenizer) numLiteral() Token {
 	val := ""
 	for t.stream.HasNext() {
 		val += string(t.stream.Peek(0))
+		t.stream.Eat(1)
 
-		c := t.stream.Peek(1)
+		c := t.stream.Peek(0)
 		if c != '.' && !unicode.IsDigit(c) {
 			break
 		}
-
-		t.stream.Eat(1)
 	}
 	return Token{
 		Type:  NumberLiteral,
@@ -136,7 +147,7 @@ func (t *Tokenizer) numLiteral() Token {
 }
 
 func isLetter(val rune) bool {
-	return val == rune(LBrack) || val == rune(RBrack) || val == rune(LCurly) || val == rune(RCurly) || unicode.IsLetter(val)
+	return val == rune(LBrack) || val == rune(RBrack) || unicode.IsLetter(val)
 }
 
 func (t *Tokenizer) identifier() Token {
@@ -145,13 +156,12 @@ func (t *Tokenizer) identifier() Token {
 	for t.stream.HasNext() {
 		val += string(t.stream.Peek(0))
 
-		c := t.stream.Peek(1)
+		t.stream.Eat(1)
+
+		c := t.stream.Peek(0)
 		if !isLetter(c) {
-			t.stream.Eat(1)
 			break
 		}
-
-		t.stream.Eat(1)
 	}
 	return Token{
 		Type:  Identifier,

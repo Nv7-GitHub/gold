@@ -6,6 +6,7 @@ import (
 
 	"github.com/Nv7-Github/gold/parser"
 	"github.com/Nv7-Github/gold/tokenizer"
+	"github.com/davecgh/go-spew/spew"
 )
 
 //go:embed examples/hello.gold
@@ -24,7 +25,8 @@ func main() {
 		return
 	}
 
+	spew.Config.DisablePointerAddresses = true
 	for _, node := range parse.Nodes {
-		fmt.Println(node)
+		spew.Dump(node)
 	}
 }

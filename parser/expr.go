@@ -1,12 +1,15 @@
 package parser
 
-import "github.com/Nv7-Github/gold/tokenizer"
+import (
+	"github.com/Nv7-Github/gold/tokenizer"
+)
 
 type BinaryExpr struct {
 	*BasicNode
 
 	Lhs Node
 	Rhs Node
+	Op  tokenizer.Op
 }
 
 func (p *Parser) parseBinaryExpr() (Node, error) {
@@ -22,6 +25,9 @@ func (p *Parser) parseBinaryExpr() (Node, error) {
 	if tok.Type != tokenizer.Operator {
 		return nil, p.getError(tok.Pos, "expected operator")
 	}
+	if !p.tok.Eat() {
+		return nil, p.getError(p.tok.CurrPos(), "expected rhs")
+	}
 
 	rhs, err := p.parseExpr()
 	if err != nil {
@@ -29,7 +35,9 @@ func (p *Parser) parseBinaryExpr() (Node, error) {
 	}
 
 	// Eat last parenthesis
-	p.tok.Eat()
+	if !p.tok.Eat() {
+		return nil, p.getError(tok.Pos, "expected \")\"")
+	}
 
 	return &BinaryExpr{
 		BasicNode: &BasicNode{
@@ -37,5 +45,6 @@ func (p *Parser) parseBinaryExpr() (Node, error) {
 		},
 		Lhs: lhs,
 		Rhs: rhs,
+		Op:  tokenizer.Op([]rune(tok.Value)[0]),
 	}, nil
 }

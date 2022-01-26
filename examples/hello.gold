@@ -1,6 +1,1 @@
-# Hi
-print "Hello, World!"; # Hey
-
-# ABC
-
-print "Yo";
+print "Hello, World!"; # This is a comment

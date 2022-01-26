@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+
 	"github.com/Nv7-Github/gold/tokenizer"
 )
 
@@ -14,10 +16,12 @@ type CallStmt struct {
 func (p *Parser) parseCall() (Node, error) {
 	fn := p.tok.CurrTok().Value
 	ps := p.tok.CurrTok().Pos
-	p.tok.Eat()
+	if !p.tok.Eat() {
+		return nil, p.getError(ps, "expected \";\"")
+	}
 
 	args := make([]Node, 0)
-	for p.tok.CurrTok().Type != tokenizer.End && (p.tok.CurrTok().Type != tokenizer.Operation) {
+	for p.tok.CurrTok().Type != tokenizer.End {
 		if p.tok.CurrTok().Type == tokenizer.Operation {
 			switch p.tok.CurrTok().Value {
 			case string(tokenizer.Assign):
@@ -30,11 +34,16 @@ func (p *Parser) parseCall() (Node, error) {
 				})
 
 			case string(tokenizer.BlockStart):
+				fmt.Println("Block")
 				return p.parseBlock(fn, args)
 
 			default:
 				return nil, p.getError(p.tok.CurrTok().Pos, "unexpected token: %s", p.tok.CurrTok().Value)
 			}
+		}
+
+		if p.tok.IsEnd() {
+			return nil, p.getError(p.tok.CurrPos(), "expected \";\"")
 		}
 
 		expr, err := p.parseExpr()

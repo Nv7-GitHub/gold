@@ -1,6 +1,8 @@
 package parser
 
-import "github.com/Nv7-Github/gold/tokenizer"
+import (
+	"github.com/Nv7-Github/gold/tokenizer"
+)
 
 type BlockStmt struct {
 	*BasicNode
@@ -13,7 +15,9 @@ type BlockStmt struct {
 func (p *Parser) parseBlock(fn string, args []Node) (Node, error) {
 	stmts := make([]Node, 0)
 	ps := p.tok.CurrTok().Pos // BlockStart
-	p.tok.Eat()
+	if !p.tok.Eat() {
+		return nil, p.getError(ps, "expected block end")
+	}
 
 	for p.tok.CurrTok().Type != tokenizer.Operation && (p.tok.CurrTok().Value != tokenizer.BlockEnd) {
 		stm, err := p.parseStmt()
@@ -22,6 +26,8 @@ func (p *Parser) parseBlock(fn string, args []Node) (Node, error) {
 		}
 		stmts = append(stmts, stm)
 	}
+	// Eat end
+	p.tok.Eat()
 
 	return &BlockStmt{
 		BasicNode: &BasicNode{

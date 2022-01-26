@@ -52,6 +52,7 @@ var tokenNames = map[TokenType]string{
 	Operator:      "Operator",
 	Parenthesis:   "Parenthesis",
 	End:           "End",
+	Operation:     "Operation",
 }
 
 func (t TokenType) String() string {
@@ -86,13 +87,12 @@ const (
 	RParen Paren = ')'
 	LBrack Paren = '['
 	RBrack Paren = ']'
-	LCurly Paren = '{'
-	RCurly Paren = '}'
 )
 
 const Assign = "=>"
 const BlockStart = "do"
 const BlockEnd = "end"
+const Else = "else"
 
 type Token struct {
 	Type  TokenType

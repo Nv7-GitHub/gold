@@ -16,7 +16,9 @@ func (p *Parser) parseAssign(expr Node) (Node, error) {
 		return nil, p.getError(p.tok.CurrTok().Pos, "expected identifier")
 	}
 	varname := p.tok.CurrTok().Value
-	p.tok.Eat()
+	if !p.tok.Eat() {
+		return nil, p.getError(p.tok.CurrTok().Pos, "expected \";\"")
+	}
 
 	// Semicolon
 	if p.tok.CurrTok().Type != tokenizer.End {

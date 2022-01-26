@@ -58,7 +58,7 @@ func (p *Parser) parseExpr() (Node, error) {
 		return nil, p.getError(p.tok.CurrTok().Pos, "unknown token: %s", p.tok.CurrTok().Value)
 
 	default:
-		return nil, p.getError(p.tok.CurrTok().Pos, "unknown token")
+		return nil, p.getError(p.tok.CurrTok().Pos, "unknown token: %s", p.tok.CurrTok().Value)
 	}
 }
 

@@ -7,6 +7,9 @@ type Stream struct {
 }
 
 func (s *Stream) Peek(off int) rune {
+	if len(s.code) <= s.pos+off {
+		return rune(0)
+	}
 	return s.code[s.pos+off]
 }
 

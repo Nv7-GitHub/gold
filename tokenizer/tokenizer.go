@@ -14,8 +14,9 @@ func NewTokenizer(stream *Stream) *Tokenizer {
 	}
 }
 
-func (t *Tokenizer) Eat() {
+func (t *Tokenizer) Eat() bool {
 	t.pos++
+	return !(t.pos >= len(t.Tokens))
 }
 
 func (t *Tokenizer) IsEnd() bool {
@@ -24,4 +25,10 @@ func (t *Tokenizer) IsEnd() bool {
 
 func (t *Tokenizer) CurrTok() Token {
 	return t.Tokens[t.pos]
+}
+
+func (t *Tokenizer) CurrPos() *Pos {
+	ps := t.Tokens[t.pos-1].Pos.Dup()
+	ps.Col += len(t.Tokens[t.pos-1].Value)
+	return ps
 }

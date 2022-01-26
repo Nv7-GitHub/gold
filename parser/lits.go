@@ -57,7 +57,7 @@ func (p *Parser) parseIdentifier() (Node, error) {
 	p.tok.Eat()
 	return &Const{
 		BasicNode: &BasicNode{
-			pos: p.tok.CurrTok().Pos,
+			pos: tok.Pos,
 		},
 		Type:         types.STRING,
 		Val:          tok.Value,
