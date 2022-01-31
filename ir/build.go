@@ -37,8 +37,9 @@ func (b *Builder) buildNode(node parser.Node, inexpr ...bool) (Node, error) {
 				return nil, node.Pos().Error("unknown variable: %s", n.Val.(string))
 			}
 			return &VariableExpr{
-				pos: n.Pos(),
-				typ: v.Type,
+				pos:  n.Pos(),
+				typ:  v.Type,
+				Name: n.Val.(string),
 			}, nil
 		}
 		return &Const{
