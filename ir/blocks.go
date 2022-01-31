@@ -39,6 +39,9 @@ func (b *Builder) buildBlock(n *parser.BlockStmt) (Node, error) {
 		}
 	}
 
+	// Pop scope
+	b.Scope.Pop()
+
 	return &BlockNode{
 		Call: c,
 		Body: body,
