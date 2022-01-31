@@ -1,1 +1,8 @@
 print "Hello, World!"; # This is a comment
+
+def i int;
+(0) => i;
+while (i < 10) do
+ (i + 1) => i;
+ print i;
+end

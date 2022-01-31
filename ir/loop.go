@@ -1,0 +1,23 @@
+package ir
+
+import (
+	"github.com/Nv7-Github/gold/tokenizer"
+	"github.com/Nv7-Github/gold/types"
+)
+
+type WhileStmt struct {
+	Cond Node
+}
+
+func (w *WhileStmt) Type() types.Type { return types.NULL }
+
+func init() {
+	builders["while"] = nodeBuilder{
+		ParamTyps: []types.Type{types.BOOL},
+		Build: func(b *Builder, pos *tokenizer.Pos, args []Node) (Call, error) {
+			return &WhileStmt{
+				Cond: args[0],
+			}, nil
+		},
+	}
+}

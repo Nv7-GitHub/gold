@@ -1,6 +1,8 @@
 package parser
 
-import "github.com/Nv7-Github/gold/tokenizer"
+import (
+	"github.com/Nv7-Github/gold/tokenizer"
+)
 
 type AssignStmt struct {
 	*BasicNode

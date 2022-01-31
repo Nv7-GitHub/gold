@@ -48,12 +48,15 @@ func (p *Parser) parseExpr() (Node, error) {
 	case tokenizer.StringLiteral:
 		return p.parseStringLiteral()
 
+	case tokenizer.BoolLiteral:
+		return p.parseBoolLiteral()
+
 	case tokenizer.Identifier:
 		return p.parseIdentifier()
 
 	case tokenizer.Parenthesis:
 		if p.tok.CurrTok().Value == string(tokenizer.LParen) {
-			return p.parseBinaryExpr()
+			return p.parseOp()
 		}
 		return nil, p.getError(p.tok.CurrTok().Pos, "unknown token: %s", p.tok.CurrTok().Value)
 

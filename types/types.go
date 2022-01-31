@@ -14,15 +14,18 @@ type BasicType int
 const (
 	INT BasicType = iota
 	FLOAT
+	BOOL
 	STRING
 	ARRAY
 	MAP
+	NULL
 )
 
 var basicTypeNames = map[BasicType]string{
 	INT:    "int",
 	FLOAT:  "float",
 	STRING: "string",
+	BOOL:   "bool",
 }
 
 func (b BasicType) BasicType() BasicType {
@@ -68,7 +71,7 @@ type MapType struct {
 	ValType Type
 }
 
-func NewMapType(keyType, valType BasicType) *MapType {
+func NewMapType(keyType, valType Type) *MapType {
 	return &MapType{
 		KeyType: keyType,
 		ValType: valType,

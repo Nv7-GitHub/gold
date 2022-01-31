@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"fmt"
-
 	"github.com/Nv7-Github/gold/tokenizer"
 )
 
@@ -34,7 +32,6 @@ func (p *Parser) parseCall() (Node, error) {
 				})
 
 			case string(tokenizer.BlockStart):
-				fmt.Println("Block")
 				return p.parseBlock(fn, args)
 
 			default:

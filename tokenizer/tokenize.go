@@ -21,7 +21,7 @@ func (t *Tokenizer) Tokenize() {
 					Value: "=>",
 					Pos:   t.stream.CodePos(),
 				})
-				t.stream.Eat(1)
+				t.stream.Eat(2)
 			} else {
 				t.Tokens = append(t.Tokens, Token{
 					Type:  Operator,
@@ -163,6 +163,13 @@ func (t *Tokenizer) identifier() Token {
 			break
 		}
 	}
+	if val == True || val == False {
+		return Token{
+			Type:  BoolLiteral,
+			Value: val,
+			Pos:   pos,
+		}
+	}
 	return Token{
 		Type:  Identifier,
 		Value: val,
@@ -171,7 +178,10 @@ func (t *Tokenizer) identifier() Token {
 }
 
 func (t *Tokenizer) eatComment() {
-	for t.stream.Peek(0) != '\n' {
+	for t.stream.HasNext() {
+		if t.stream.Peek(0) == '\n' {
+			return
+		}
 		t.stream.Eat(1)
 	}
 }

@@ -21,6 +21,10 @@ func (p *Pos) NextLine() {
 	p.Col = 0
 }
 
+func (p *Pos) Error(msg string, args ...interface{}) error {
+	return fmt.Errorf("%v: %s", p, fmt.Sprintf(msg, args...))
+}
+
 func (p *Pos) Dup() *Pos {
 	return &Pos{
 		Line:     p.Line,
@@ -38,6 +42,7 @@ type TokenType int
 const (
 	StringLiteral TokenType = iota
 	NumberLiteral
+	BoolLiteral
 	Identifier
 	Operator
 	Operation
@@ -48,6 +53,7 @@ const (
 var tokenNames = map[TokenType]string{
 	StringLiteral: "StringLiteral",
 	NumberLiteral: "NumberLiteral",
+	BoolLiteral:   "BoolLiteral",
 	Identifier:    "Identifier",
 	Operator:      "Operator",
 	Parenthesis:   "Parenthesis",
@@ -93,6 +99,9 @@ const Assign = "=>"
 const BlockStart = "do"
 const BlockEnd = "end"
 const Else = "else"
+
+const True = "true"
+const False = "false"
 
 type Token struct {
 	Type  TokenType

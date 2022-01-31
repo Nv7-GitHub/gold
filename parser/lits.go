@@ -49,6 +49,21 @@ func (p *Parser) parseStringLiteral() (Node, error) {
 	}, nil
 }
 
+func (p *Parser) parseBoolLiteral() (Node, error) {
+	tok := p.tok.CurrTok()
+	if tok.Type != tokenizer.BoolLiteral {
+		return nil, p.getError(tok.Pos, "expected bool literal")
+	}
+	p.tok.Eat()
+	return &Const{
+		BasicNode: &BasicNode{
+			pos: tok.Pos,
+		},
+		Type: types.BOOL,
+		Val:  tok.Value == tokenizer.True,
+	}, nil
+}
+
 func (p *Parser) parseIdentifier() (Node, error) {
 	tok := p.tok.CurrTok()
 	if tok.Type != tokenizer.Identifier {
