@@ -1,10 +1,22 @@
 package ir
 
-import "github.com/Nv7-Github/gold/parser"
+import (
+	"github.com/Nv7-Github/gold/parser"
+	"github.com/Nv7-Github/gold/tokenizer"
+	"github.com/Nv7-Github/gold/types"
+)
+
+type blockBuilder struct {
+	ParamTyps []types.Type
+	Init      func(b *Builder, pos *tokenizer.Pos, args []Node) (Block, error)
+	Build     func(b *Builder, pos *tokenizer.Pos, blk Block, stmts []Node) error
+}
+
+var blockBuilders = make(map[string]blockBuilder)
 
 func (b *Builder) buildBlock(n *parser.BlockStmt) (Node, error) {
 	// Get builder
-	bld, exists := builders[n.Fn]
+	bld, exists := blockBuilders[n.Fn]
 	if !exists {
 		return nil, n.Pos().Error("unknown block type: %s", n.Fn)
 	}
@@ -25,7 +37,7 @@ func (b *Builder) buildBlock(n *parser.BlockStmt) (Node, error) {
 	}
 
 	// Build
-	c, err := bld.Build(b, n.Pos(), args)
+	c, err := bld.Init(b, n.Pos(), args)
 	if err != nil {
 		return nil, err
 	}
@@ -39,12 +51,17 @@ func (b *Builder) buildBlock(n *parser.BlockStmt) (Node, error) {
 		}
 	}
 
+	// Finalize
+	err = bld.Build(b, n.Pos(), c, body)
+	if err != nil {
+		return nil, err
+	}
+
 	// Pop scope
 	b.Scope.Pop()
 
 	return &BlockNode{
-		Call: c,
-		Body: body,
-		pos:  n.Pos(),
+		Block: c,
+		pos:   n.Pos(),
 	}, nil
 }

@@ -7,18 +7,21 @@ import (
 
 type WhileStmt struct {
 	Cond Node
+	Body []Node
 }
 
-func (w *WhileStmt) Type() types.Type { return types.NULL }
-
 func init() {
-	builders["while"] = nodeBuilder{
+	blockBuilders["while"] = blockBuilder{
 		ParamTyps: []types.Type{types.BOOL},
-		Build: func(b *Builder, pos *tokenizer.Pos, args []Node) (Call, error) {
+		Init: func(b *Builder, pos *tokenizer.Pos, args []Node) (Block, error) {
 			b.Scope.PushScope(NewScope(ScopeTypeWhile))
 			return &WhileStmt{
 				Cond: args[0],
 			}, nil
+		},
+		Build: func(b *Builder, pos *tokenizer.Pos, blk Block, stmts []Node) error {
+			blk.(*WhileStmt).Body = stmts
+			return nil
 		},
 	}
 }

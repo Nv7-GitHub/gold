@@ -14,6 +14,8 @@ type Call interface {
 	Type() types.Type
 }
 
+type Block interface{}
+
 type CallNode struct {
 	Call Call
 	pos  *tokenizer.Pos
@@ -28,8 +30,7 @@ func (c *CallNode) Type() types.Type {
 }
 
 type BlockNode struct {
-	Call Call
-	Body []Node
+	Block Block
 
 	pos *tokenizer.Pos
 }

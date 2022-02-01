@@ -6,3 +6,9 @@ while (i < 10) do
  (i + 1) => i;
  print i;
 end
+
+if (1 = 1) do
+  print "Hi";
+else
+  print "Ho";
+end
