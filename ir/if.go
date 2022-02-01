@@ -19,6 +19,13 @@ func init() {
 	builders["else"] = nodeBuilder{
 		ParamTyps: []types.Type{},
 		Build: func(b *Builder, pos *tokenizer.Pos, args []Node) (Call, error) {
+			if b.Scope.Curr().Type != ScopeTypeIf {
+				return nil, pos.Error("else statement outside of if")
+			}
+			if b.Scope.Curr().ElsePos != nil {
+				return nil, pos.Error("duplicate else statement, original at %s", b.Scope.Curr().ElsePos.String())
+			}
+			b.Scope.Curr().ElsePos = pos
 			return &ElseStmt{}, nil
 		},
 	}

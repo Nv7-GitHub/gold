@@ -19,6 +19,10 @@ const (
 	ARRAY
 	MAP
 	NULL
+
+	// Special types
+	ANY
+	VARIADIC
 )
 
 var basicTypeNames = map[BasicType]string{
@@ -26,6 +30,7 @@ var basicTypeNames = map[BasicType]string{
 	FLOAT:  "float",
 	STRING: "string",
 	BOOL:   "bool",
+	NULL:   "null",
 }
 
 func (b BasicType) BasicType() BasicType {
@@ -37,6 +42,9 @@ func (b BasicType) String() string {
 }
 
 func (b BasicType) Equal(t Type) bool {
+	if b == ANY || t == ANY {
+		return true
+	}
 	return b == t.BasicType()
 }
 
@@ -55,6 +63,9 @@ func (a *ArrayType) BasicType() BasicType {
 }
 
 func (a *ArrayType) Equal(b Type) bool {
+	if b.BasicType() == ANY {
+		return true
+	}
 	if b.BasicType() != ARRAY {
 		return false
 	}
@@ -83,6 +94,9 @@ func (m *MapType) BasicType() BasicType {
 }
 
 func (m *MapType) Equal(b Type) bool {
+	if b.BasicType() == ANY {
+		return true
+	}
 	if b.BasicType() != MAP {
 		return false
 	}

@@ -5,6 +5,27 @@ import (
 	"github.com/Nv7-Github/gold/types"
 )
 
+type IR struct {
+	Funcs map[string]*Func
+	Nodes []Node
+}
+
+type FuncParam struct {
+	Name string
+	Type types.Type
+}
+
+type Func struct {
+	pos *tokenizer.Pos
+
+	Name    string
+	Params  []FuncParam
+	RetType types.Type
+	Body    []Node
+}
+
+func (f *Func) Pos() *tokenizer.Pos { return f.pos }
+
 type Node interface {
 	Pos() *tokenizer.Pos
 	Type() types.Type
@@ -45,6 +66,7 @@ func (b *BlockNode) Type() types.Type {
 
 type Builder struct {
 	Scope *ScopeStack
+	Funcs map[string]*Func
 }
 
 func NewBuilder() *Builder {
@@ -59,13 +81,29 @@ type ScopeStack struct {
 	vars     map[string]*Variable
 }
 
+func (s *ScopeStack) HasScope(t ScopeType) bool {
+	cnt, exists := s.scopecnt[t]
+	if !exists {
+		return false
+	}
+	return cnt > 0
+}
+
+func (s *ScopeStack) GetScopeByType(t ScopeType) *Scope {
+	for _, scope := range s.scopes {
+		if scope.Type == t {
+			return scope
+		}
+	}
+	return nil
+}
+
 func NewScopeStack() *ScopeStack {
 	s := &ScopeStack{
 		scopes:   make([]*Scope, 0, 1),
 		scopecnt: make(map[ScopeType]int, 1),
 		vars:     make(map[string]*Variable),
 	}
-	s.PushScope(NewScope(ScopeTypeGlobal))
 	return s
 }
 
@@ -81,6 +119,10 @@ const (
 type Scope struct {
 	Type      ScopeType
 	Variables map[string]*Variable
+
+	// Scope-specific things
+	ElsePos  *tokenizer.Pos
+	FuncName string
 
 	parent *ScopeStack
 }

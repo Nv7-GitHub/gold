@@ -26,15 +26,13 @@ func main() {
 		return
 	}
 
-	ir := ir.NewBuilder()
-	nodes, err := ir.Build(parse)
+	bld := ir.NewBuilder()
+	ir, err := bld.Build(parse)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
 	spew.Config.DisablePointerAddresses = true
-	for _, node := range nodes {
-		spew.Dump(node)
-	}
+	spew.Dump(ir)
 }

@@ -1,6 +1,8 @@
 package ir
 
 import (
+	"errors"
+
 	"github.com/Nv7-Github/gold/parser"
 	"github.com/Nv7-Github/gold/tokenizer"
 	"github.com/Nv7-Github/gold/types"
@@ -13,16 +15,30 @@ type nodeBuilder struct {
 
 var builders = make(map[string]nodeBuilder)
 
-func (b *Builder) Build(p *parser.Parser) ([]Node, error) {
+func (b *Builder) Build(p *parser.Parser) (*IR, error) {
+	err := b.functionPass(p)
+	if err != nil {
+		return nil, err
+	}
+	b.Scope.PushScope(NewScope(ScopeTypeGlobal))
+
 	out := make([]Node, len(p.Nodes))
-	var err error
 	for i, stmt := range p.Nodes {
 		out[i], err = b.buildNode(stmt)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return out, nil
+
+	if b.Scope.Curr().Type != ScopeTypeGlobal {
+		return nil, errors.New("global scope not closed, missing \"end\"?")
+	}
+	b.Scope.Pop()
+
+	return &IR{
+		Funcs: b.Funcs,
+		Nodes: out,
+	}, nil
 }
 
 func (b *Builder) buildNode(node parser.Node, inexpr ...bool) (Node, error) {

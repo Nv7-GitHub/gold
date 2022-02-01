@@ -17,6 +17,7 @@ func (s *ScopeStack) Pop() {
 	for v := range c.Variables {
 		delete(s.vars, v)
 	}
+	s.scopes = s.scopes[:len(s.scopes)-1]
 }
 
 func (s *Scope) AddVar(name string, v *Variable) bool {
