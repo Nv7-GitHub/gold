@@ -7,7 +7,9 @@ import (
 	"github.com/Nv7-Github/gold/ir"
 	"github.com/Nv7-Github/gold/parser"
 	"github.com/Nv7-Github/gold/tokenizer"
-	"github.com/davecgh/go-spew/spew"
+
+	"github.com/Nv7-Github/gold/backends/cgen"
+	_ "github.com/Nv7-Github/gold/backends/cgen"
 )
 
 //go:embed examples/hello.gold
@@ -33,6 +35,8 @@ func main() {
 		return
 	}
 
-	spew.Config.DisablePointerAddresses = true
-	spew.Dump(ir)
+	// CGen test
+	cgen := cgen.NewCGen(ir)
+	cgen.RequireSnippet("strings.c")
+	fmt.Println(cgen.Build())
 }
