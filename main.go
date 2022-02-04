@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
 	_ "embed"
 	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
 
 	"github.com/Nv7-Github/gold/ir"
 	"github.com/Nv7-Github/gold/parser"
@@ -38,5 +42,37 @@ func main() {
 	// CGen test
 	cgen := cgen.NewCGen(ir)
 	cgen.RequireSnippet("strings.c")
-	fmt.Println(cgen.Build())
+	code, err := cgen.Build()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// Write & compile
+	f, err := os.Create("examples/code.c")
+	if err != nil {
+		panic(err)
+	}
+	/*f, err := os.CreateTemp("", "*.c")
+	if err != nil {
+		panic(err)
+	}*/
+	_, err = f.WriteString(code)
+	if err != nil {
+		panic(err)
+	}
+
+	currPath, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	cmd := exec.Command("cc", f.Name(), "-o", filepath.Join(currPath, "main"))
+	stderr := bytes.NewBuffer(nil)
+	cmd.Stderr = stderr
+
+	err = cmd.Run()
+	if err != nil {
+		fmt.Println(stderr.String())
+		return
+	}
 }

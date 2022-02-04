@@ -14,6 +14,10 @@ type CGen struct {
 	top      *strings.Builder
 	snippets map[string]empty
 	imports  map[string]empty
+
+	tmpcnt int
+
+	scope *Stack
 }
 
 func NewCGen(i *ir.IR) *CGen {
@@ -23,5 +27,8 @@ func NewCGen(i *ir.IR) *CGen {
 		top:      &strings.Builder{},
 		snippets: make(map[string]empty),
 		imports:  make(map[string]empty),
+		tmpcnt:   0,
+
+		scope: NewStack(),
 	}
 }

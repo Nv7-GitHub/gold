@@ -34,6 +34,9 @@ func init() {
 		imports := make([]string, 0)
 		for {
 			line, _, err := buf.ReadLine()
+			if err == io.EOF {
+				break
+			}
 			if err != nil {
 				panic(err)
 			}
@@ -76,6 +79,8 @@ func (c *CGen) RequireSnippet(name string) error {
 	// Add code
 	c.top.WriteString(snip.code)
 	c.top.WriteString("\n")
+
+	c.snippets[name] = empty{}
 
 	return nil
 }
