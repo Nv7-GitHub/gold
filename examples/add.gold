@@ -1,0 +1,11 @@
+func add do
+  param a int;
+  param b int;
+  returns int;
+
+  return (a + b);
+end
+
+def sum int;
+call add 1 2 => sum;
+print sum;

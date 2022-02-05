@@ -12,6 +12,12 @@ type BinaryExpr struct {
 	Op  tokenizer.Op
 }
 
+type UnaryExpr struct {
+	*BasicNode
+
+	Val Node
+}
+
 func (p *Parser) parseOp() (Node, error) {
 	ps := p.tok.CurrTok().Pos
 	p.tok.Eat() // get rid of LParen
@@ -25,7 +31,12 @@ func (p *Parser) parseOp() (Node, error) {
 	if tok.Type != tokenizer.Operator {
 		if tok.Type == tokenizer.Parenthesis && tok.Value == string(tokenizer.RParen) {
 			p.tok.Eat()
-			return lhs, nil
+			return &UnaryExpr{
+				BasicNode: &BasicNode{
+					pos: ps,
+				},
+				Val: lhs,
+			}, nil
 		}
 		return nil, p.getError(tok.Pos, "expected operator")
 	}

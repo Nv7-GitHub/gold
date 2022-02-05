@@ -74,6 +74,9 @@ func (b *Builder) buildNode(node parser.Node, inexpr ...bool) (Node, error) {
 	case *parser.BinaryExpr:
 		return b.buildBinaryExpr(n)
 
+	case *parser.UnaryExpr:
+		return b.buildUnaryExpr(n)
+
 	default:
 		return nil, n.Pos().Error("unknown node type: %T", n)
 	}

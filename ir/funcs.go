@@ -248,7 +248,7 @@ func init() {
 
 			// Check types
 			if len(args)-1 != len(fn.Params) {
-				return nil, pos.Error("not enough arguments for function call: expected %d arguments, got %d", len(fn.Params), len(args))
+				return nil, pos.Error("not enough arguments for function call: expected %d arguments, got %d", len(fn.Params), len(args)-1)
 			}
 			for i, arg := range args[1:] {
 				if !arg.Type().Equal(fn.Params[i].Type) {

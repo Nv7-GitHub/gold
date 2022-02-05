@@ -13,11 +13,13 @@ func (c *CGen) Build() (string, error) {
 		// Build func starter
 		body.WriteString(c.GetCType(fn.RetType))
 		body.WriteString(" ")
+		body.WriteString(Namespace)
 		body.WriteString(fn.Name)
 		body.WriteString("(")
 		for i, par := range fn.Params {
 			body.WriteString(c.GetCType(par.Type))
 			body.WriteString(" ")
+			body.WriteString(Namespace)
 			body.WriteString(par.Name)
 			if i != len(fn.Params)-1 {
 				body.WriteString(", ")
@@ -32,17 +34,21 @@ func (c *CGen) Build() (string, error) {
 			if err != nil {
 				return "", err
 			}
-			body.WriteString(Indent(v.Setup))
-			body.WriteString("\n")
+			if len(v.Setup) > 0 {
+				body.WriteString(Indent(v.Setup))
+				body.WriteString("\n")
+			}
 			body.WriteString(Indent(v.Code))
 			body.WriteString(";\n")
-			body.WriteString(Indent(v.Destruct))
-			body.WriteString("\n")
+			if len(v.Destruct) > 0 {
+				body.WriteString(Indent(v.Destruct))
+				body.WriteString("\n")
+			}
 		}
 		// Add free code
 		body.WriteString(Indent(c.scope.Pop()))
 
-		body.WriteString("}\n\n")
+		body.WriteString("\n}\n\n")
 	}
 
 	// Build global code
@@ -53,12 +59,18 @@ func (c *CGen) Build() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		body.WriteString(Indent(code.Setup))
-		body.WriteString("\n")
+		if len(code.Setup) > 0 {
+			body.WriteString(Indent(code.Setup))
+			body.WriteString("\n")
+		}
+
 		body.WriteString(Indent(code.Code))
 		body.WriteString(";\n")
-		body.WriteString(Indent(code.Destruct))
-		body.WriteString("\n")
+
+		if len(code.Destruct) > 0 {
+			body.WriteString(Indent(code.Destruct))
+			body.WriteString("\n")
+		}
 	}
 	body.WriteString(Indent(c.scope.Pop()))
 	body.WriteString("\n\treturn 0;\n}\n")

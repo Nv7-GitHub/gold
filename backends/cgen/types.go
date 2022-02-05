@@ -1,10 +1,16 @@
 package cgen
 
 import (
+	"fmt"
+
 	"github.com/Nv7-Github/gold/types"
 )
 
 const Namespace = "gold__"
+
+var dynamicTyps = map[types.Type]empty{
+	types.STRING: {},
+}
 
 type Value struct {
 	Setup    string
@@ -12,6 +18,9 @@ type Value struct {
 
 	Code string
 	Type types.Type
+
+	CanGrab bool
+	Grab    string
 }
 
 func (c *CGen) GetCType(typ types.Type) string {
@@ -40,5 +49,25 @@ func (c *CGen) GetCType(typ types.Type) string {
 
 	default:
 		return "unknown"
+	}
+}
+
+func (c *CGen) GetFreeCode(typ types.Type, varName string) string {
+	switch typ {
+	case types.STRING:
+		return fmt.Sprintf("string_free(%s);", varName)
+
+	default:
+		return ""
+	}
+}
+
+func (c *CGen) GetGrabCode(typ types.Type, varName string) string {
+	switch typ {
+	case types.STRING:
+		return fmt.Sprintf("%s->refs++;", varName)
+
+	default:
+		return ""
 	}
 }

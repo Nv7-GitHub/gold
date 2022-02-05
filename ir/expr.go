@@ -71,6 +71,10 @@ func (b *Builder) buildBinaryExpr(n *parser.BinaryExpr) (Node, error) {
 	}
 }
 
+func (b *Builder) buildUnaryExpr(n *parser.UnaryExpr) (Node, error) {
+	return b.buildNode(n.Val, true)
+}
+
 func getCommonNumType(lhs, rhs Node) (Node, Node, types.Type, error) {
 	if !lhs.Type().Equal(types.FLOAT) && !lhs.Type().Equal(types.INT) {
 		return nil, nil, types.NULL, lhs.Pos().Error("cannot operate on non-numeric types")

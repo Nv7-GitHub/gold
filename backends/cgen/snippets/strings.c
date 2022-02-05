@@ -20,6 +20,9 @@ string* string_new(char* data, int len) {
 }
 
 void string_free(string* s) {
+  if (s == NULL) {
+    return;
+  }
   s->refs--;
   if (s->refs == 0) {
     if (!s->is_static) {

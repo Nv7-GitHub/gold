@@ -1,6 +1,8 @@
 package cgen
 
-import "strings"
+import (
+	"strings"
+)
 
 type scope struct {
 	toFree []string
