@@ -2,6 +2,7 @@ package cgen
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Nv7-Github/gold/ir"
 	"github.com/Nv7-Github/gold/types"
@@ -97,9 +98,30 @@ func (c *CGen) addMathExpr(s *ir.MathExpr) (*Value, error) {
 	if err != nil {
 		return nil, err
 	}
+	setup := &strings.Builder{}
+	destruct := &strings.Builder{}
+	if len(lhs.Setup) > 0 {
+		setup.WriteString(lhs.Setup)
+	}
+	if len(rhs.Setup) > 0 {
+		if len(lhs.Setup) > 0 {
+			setup.WriteString(";\n")
+		}
+		setup.WriteString(rhs.Setup)
+	}
+
+	if len(lhs.Destruct) > 0 {
+		destruct.WriteString(lhs.Setup)
+	}
+	if len(rhs.Destruct) > 0 {
+		if len(lhs.Destruct) > 0 {
+			destruct.WriteString(";\n")
+		}
+		destruct.WriteString(rhs.Setup)
+	}
 	return &Value{
-		Setup:    lhs.Setup + ";\n" + rhs.Setup,
-		Destruct: lhs.Destruct + ";\n" + rhs.Destruct,
+		Setup:    setup.String(),
+		Destruct: destruct.String(),
 		Code:     fmt.Sprintf("(%s)%s %s (%s)%s", c.GetCType(s.Type()), lhs.Code, s.Op, c.GetCType(s.Type()), rhs.Code),
 		Type:     s.Type(),
 	}, nil
