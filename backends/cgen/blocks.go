@@ -42,7 +42,7 @@ func (c *CGen) addIf(s *ir.IfStmt) (*Value, error) {
 		if err != nil {
 			return nil, err
 		}
-		elseCode = fmt.Sprintf("else {\n%s\n}", Indent(els))
+		elseCode = fmt.Sprintf(" else {\n%s\n}", Indent(els))
 	}
 
 	return &Value{

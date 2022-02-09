@@ -35,7 +35,7 @@ func JoinCode(vals ...string) string {
 func (c *CGen) BuildStmts(stmts []ir.Node) (string, error) {
 	code := &strings.Builder{}
 	c.scope.Push()
-	for _, node := range stmts {
+	for i, node := range stmts {
 		v, err := c.addNode(node)
 		if err != nil {
 			return "", err
@@ -45,12 +45,19 @@ func (c *CGen) BuildStmts(stmts []ir.Node) (string, error) {
 			code.WriteString("\n")
 		}
 		code.WriteString(v.Code)
-		code.WriteString(";\n")
+		code.WriteString(";")
+		if i != len(stmts)-1 {
+			code.WriteString("\n")
+		}
 		if len(v.Destruct) > 0 {
 			code.WriteString(v.Destruct)
 			code.WriteString("\n")
 		}
 	}
-	code.WriteString(c.scope.Pop())
+	cleanup := c.scope.Pop()
+	if len(cleanup) > 0 {
+		code.WriteString("\n")
+		code.WriteString(cleanup)
+	}
 	return code.String(), nil
 }

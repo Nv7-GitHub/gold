@@ -24,9 +24,12 @@ func (s *Stack) Push() {
 
 func (s *Stack) Pop() string {
 	code := &strings.Builder{}
-	for _, line := range s.scopes[len(s.scopes)-1].toFree {
+	sc := s.scopes[len(s.scopes)-1]
+	for i, line := range sc.toFree {
 		code.WriteString(line)
-		code.WriteString("\n")
+		if i != len(sc.toFree)-1 {
+			code.WriteString("\n")
+		}
 	}
 	s.scopes = s.scopes[:len(s.scopes)-1]
 	return code.String()
