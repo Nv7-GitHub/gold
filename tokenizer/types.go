@@ -74,10 +74,11 @@ const (
 	Div Op = '/'
 	Mod Op = '%'
 
-	Eq  Op = '='
-	Ne  Op = '!'
-	Lt  Op = '<'
-	Gt  Op = '>'
+	Eq Op = '='
+	Ne Op = '!'
+	Lt Op = '<'
+	Gt Op = '>'
+
 	And Op = '&'
 	Or  Op = '|'
 )

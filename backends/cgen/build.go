@@ -28,51 +28,22 @@ func (c *CGen) Build() (string, error) {
 		body.WriteString(") {\n")
 
 		// Add body
-		c.scope.Push()
-		for _, node := range fn.Body {
-			v, err := c.addNode(node)
-			if err != nil {
-				return "", err
-			}
-			if len(v.Setup) > 0 {
-				body.WriteString(Indent(v.Setup))
-				body.WriteString("\n")
-			}
-			body.WriteString(Indent(v.Code))
-			body.WriteString(";\n")
-			if len(v.Destruct) > 0 {
-				body.WriteString(Indent(v.Destruct))
-				body.WriteString("\n")
-			}
+		bdy, err := c.BuildStmts(fn.Body)
+		if err != nil {
+			return "", err
 		}
-		// Add free code
-		body.WriteString(Indent(c.scope.Pop()))
+		body.WriteString(Indent(bdy))
 
 		body.WriteString("\n}\n\n")
 	}
 
 	// Build global code
 	body.WriteString("int main() {\n")
-	c.scope.Push()
-	for _, node := range c.ir.Nodes {
-		code, err := c.addNode(node)
-		if err != nil {
-			return "", err
-		}
-		if len(code.Setup) > 0 {
-			body.WriteString(Indent(code.Setup))
-			body.WriteString("\n")
-		}
-
-		body.WriteString(Indent(code.Code))
-		body.WriteString(";\n")
-
-		if len(code.Destruct) > 0 {
-			body.WriteString(Indent(code.Destruct))
-			body.WriteString("\n")
-		}
+	bdy, err := c.BuildStmts(c.ir.Nodes)
+	if err != nil {
+		return "", err
 	}
-	body.WriteString(Indent(c.scope.Pop()))
+	body.WriteString(Indent(bdy))
 	body.WriteString("\n\treturn 0;\n}\n")
 
 	// Build imports & top

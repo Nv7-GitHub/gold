@@ -14,8 +14,9 @@ var snippetsData embed.FS
 var snippets = make(map[string]snippet)
 
 type snippet struct {
-	imports []string
-	code    string
+	imports  []string
+	snippets []string
+	code     string
 }
 
 func init() {
@@ -32,6 +33,7 @@ func init() {
 		// Read code
 		buf := bufio.NewReader(f)
 		imports := make([]string, 0)
+		snips := make([]string, 0)
 		for {
 			line, _, err := buf.ReadLine()
 			if err == io.EOF {
@@ -42,9 +44,14 @@ func init() {
 			}
 			ln := string(line)
 
-			if strings.HasPrefix(ln, "#include <") {
-				imp := strings.TrimSuffix(strings.TrimPrefix(ln, "#include <"), ">")
-				imports = append(imports, imp)
+			if strings.HasPrefix(ln, "#include ") {
+				if strings.HasPrefix(ln, "#include <") {
+					imp := strings.TrimSuffix(strings.TrimPrefix(ln, "#include <"), ">")
+					imports = append(imports, imp)
+				} else {
+					snip := strings.TrimSuffix(strings.TrimPrefix(ln, "#include \""), "\"")
+					snips = append(snips, snip)
+				}
 			} else {
 				break
 			}
@@ -58,8 +65,9 @@ func init() {
 		f.Close()
 
 		snippets[file.Name()] = snippet{
-			imports: imports,
-			code:    string(code),
+			imports:  imports,
+			snippets: snips,
+			code:     string(code),
 		}
 	}
 }
@@ -72,6 +80,12 @@ func (c *CGen) RequireSnippet(name string) error {
 
 	// Resolve imports
 	snip := snippets[name] // No check, assumes code calling is safe
+	for _, snip := range snip.snippets {
+		err := c.RequireSnippet(snip)
+		if err != nil {
+			return err
+		}
+	}
 	for _, imp := range snip.imports {
 		c.imports[imp] = empty{}
 	}

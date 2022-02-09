@@ -21,8 +21,23 @@ func (c *CGen) addNode(s ir.Node) (*Value, error) {
 		case *ir.DefCall:
 			return c.addDef(call)
 
+		case *ir.StringCast:
+			return c.addStringCast(call)
+
 		default:
 			return nil, s.Pos().Error("unknown call node: %T", call)
+		}
+
+	case *ir.BlockNode:
+		switch blk := n.Block.(type) {
+		case *ir.WhileStmt:
+			return c.addWhile(blk)
+
+		case *ir.IfStmt:
+			return c.addIf(blk)
+
+		default:
+			return nil, s.Pos().Error("unknown block node: %T", blk)
 		}
 
 	case *ir.Const:
@@ -36,6 +51,9 @@ func (c *CGen) addNode(s ir.Node) (*Value, error) {
 
 	case *ir.AssignStmt:
 		return c.addAssign(n)
+
+	case *ir.ComparisonExpr:
+		return c.addComparison(n)
 
 	default:
 		return nil, s.Pos().Error("unknown node: %T", n)

@@ -2,9 +2,9 @@ package cgen
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/Nv7-Github/gold/ir"
+	"github.com/Nv7-Github/gold/tokenizer"
 	"github.com/Nv7-Github/gold/types"
 )
 
@@ -98,31 +98,64 @@ func (c *CGen) addMathExpr(s *ir.MathExpr) (*Value, error) {
 	if err != nil {
 		return nil, err
 	}
-	setup := &strings.Builder{}
-	destruct := &strings.Builder{}
-	if len(lhs.Setup) > 0 {
-		setup.WriteString(lhs.Setup)
-	}
-	if len(rhs.Setup) > 0 {
-		if len(lhs.Setup) > 0 {
-			setup.WriteString(";\n")
-		}
-		setup.WriteString(rhs.Setup)
-	}
-
-	if len(lhs.Destruct) > 0 {
-		destruct.WriteString(lhs.Setup)
-	}
-	if len(rhs.Destruct) > 0 {
-		if len(lhs.Destruct) > 0 {
-			destruct.WriteString(";\n")
-		}
-		destruct.WriteString(rhs.Setup)
-	}
 	return &Value{
-		Setup:    setup.String(),
-		Destruct: destruct.String(),
+		Setup:    JoinCode(lhs.Setup, rhs.Setup),
+		Destruct: JoinCode(lhs.Destruct, rhs.Destruct),
 		Code:     fmt.Sprintf("(%s)%s %s (%s)%s", c.GetCType(s.Type()), lhs.Code, s.Op, c.GetCType(s.Type()), rhs.Code),
 		Type:     s.Type(),
+	}, nil
+}
+
+var opMap = map[tokenizer.Op]string{
+	tokenizer.Eq: "==",
+	tokenizer.Ne: "!=",
+	tokenizer.Lt: "<",
+	tokenizer.Gt: ">",
+}
+
+func (c *CGen) addComparison(s *ir.ComparisonExpr) (*Value, error) {
+	lhs, err := c.addNode(s.Lhs)
+	if err != nil {
+		return nil, err
+	}
+	rhs, err := c.addNode(s.Rhs)
+	if err != nil {
+		return nil, err
+	}
+	return &Value{
+		Setup:    JoinCode(lhs.Setup, rhs.Setup),
+		Destruct: JoinCode(lhs.Destruct, rhs.Destruct),
+		Code:     fmt.Sprintf("(%s)%s %s (%s)%s", c.GetCType(s.Typ), lhs.Code, opMap[s.Op], c.GetCType(s.Typ), rhs.Code),
+		Type:     s.Type(),
+	}, nil
+}
+
+func (c *CGen) addStringCast(s *ir.StringCast) (*Value, error) {
+	c.RequireSnippet("format.c")
+
+	v, err := c.addNode(s.Arg)
+	if err != nil {
+		return nil, err
+	}
+	var code string
+	switch {
+	case v.Type.Equal(types.INT):
+		code = fmt.Sprintf("string_itoa(%s)", v.Code)
+
+	case v.Type.Equal(types.FLOAT):
+		code = fmt.Sprintf("string_ftoa(%s)", v.Code)
+	}
+
+	varname := fmt.Sprintf("%sstring_%d", Namespace, c.tmpcnt)
+	c.tmpcnt++
+	c.scope.AddFree(fmt.Sprintf("string_free(%s);", varname))
+
+	return &Value{
+		Setup:    JoinCode(v.Setup, fmt.Sprintf("string* %s = %s;", varname, code)),
+		Destruct: v.Destruct,
+		Code:     varname,
+		Type:     types.STRING,
+		CanGrab:  true,
+		Grab:     fmt.Sprintf("%s->refs++", varname),
 	}, nil
 }

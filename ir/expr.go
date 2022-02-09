@@ -31,6 +31,7 @@ type ComparisonExpr struct {
 	Op  tokenizer.Op
 	Lhs Node
 	Rhs Node
+	Typ types.Type
 }
 
 func (c *ComparisonExpr) Pos() *tokenizer.Pos { return c.pos }
@@ -125,8 +126,7 @@ func (b *Builder) buildMathOp(n *parser.BinaryExpr, lhs, rhs Node) (Node, error)
 }
 
 func (b *Builder) buildComparisonOp(n *parser.BinaryExpr, lhs, rhs Node) (Node, error) {
-	var err error
-	lhs, rhs, _, err = getCommonNumType(lhs, rhs)
+	lhs, rhs, typ, err := getCommonNumType(lhs, rhs)
 	if err != nil {
 		return nil, err
 	}
@@ -136,6 +136,7 @@ func (b *Builder) buildComparisonOp(n *parser.BinaryExpr, lhs, rhs Node) (Node, 
 		Op:  n.Op,
 		Lhs: lhs,
 		Rhs: rhs,
+		Typ: typ,
 	}, nil
 }
 

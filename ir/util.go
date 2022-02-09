@@ -30,3 +30,27 @@ func MatchTypes(pos *tokenizer.Pos, args []Node, typs []types.Type) error {
 	}
 	return nil
 }
+
+// Utility functions in Gold
+type StringCast struct {
+	Arg Node
+}
+
+func (s *StringCast) Type() types.Type { return types.STRING }
+
+func getStringCast(b *Builder, pos *tokenizer.Pos, args []Node) (Call, error) {
+	typ := args[0].Type()
+	if !typ.Equal(types.FLOAT) && !typ.Equal(types.INT) {
+		return nil, args[0].Pos().Error("can only format float and int")
+	}
+	return &StringCast{
+		Arg: args[0],
+	}, nil
+}
+
+func init() {
+	builders["str"] = nodeBuilder{
+		ParamTyps: []types.Type{types.ANY},
+		Build:     getStringCast,
+	}
+}
