@@ -63,3 +63,39 @@ func (p *Parser) parseOp() (Node, error) {
 		Op:  tokenizer.Op([]rune(tok.Value)[0]),
 	}, nil
 }
+
+type IndexExpr struct {
+	*BasicNode
+
+	Index Node
+	Value Node
+}
+
+func (p *Parser) parseIndex() (Node, error) {
+	// Parse [x]
+	ps := p.tok.CurrTok().Pos
+	p.tok.Eat() // get rid of LBrack
+	ind, err := p.parseExpr()
+	if err != nil {
+		return nil, err
+	}
+	p.tok.Eat()
+	tok := p.tok.CurrTok()
+	if tok.Type != tokenizer.Parenthesis && tok.Value != string(tokenizer.RBrack) {
+		return nil, p.getError(tok.Pos, "expected \"]\"")
+	}
+
+	// Get value
+	val, err := p.parseExpr()
+	if err != nil {
+		return nil, err
+	}
+
+	return &IndexExpr{
+		BasicNode: &BasicNode{
+			pos: ps,
+		},
+		Index: ind,
+		Value: val,
+	}, nil
+}

@@ -58,6 +58,9 @@ func (p *Parser) parseExpr() (Node, error) {
 		if p.tok.CurrTok().Value == string(tokenizer.LParen) {
 			return p.parseOp()
 		}
+		if p.tok.CurrTok().Value == string(tokenizer.LBrack) {
+			return p.parseIndex()
+		}
 		return nil, p.getError(p.tok.CurrTok().Pos, "unknown token: %s", p.tok.CurrTok().Value)
 
 	default:
