@@ -8,18 +8,34 @@ type AssignStmt struct {
 	*BasicNode
 
 	Value    Node
-	Variable string
+	Variable Node
 }
 
 func (p *Parser) parseAssign(expr Node) (Node, error) {
 	ps := p.tok.CurrTok().Pos
 	p.tok.Eat()
-	if p.tok.CurrTok().Type != tokenizer.Identifier {
-		return nil, p.getError(p.tok.CurrTok().Pos, "expected identifier")
-	}
-	varname := p.tok.CurrTok().Value
-	if !p.tok.Eat() {
-		return nil, p.getError(p.tok.CurrTok().Pos, "expected \";\"")
+	var varv Node
+	switch p.tok.CurrTok().Type {
+	case tokenizer.Identifier:
+		var err error
+		varv, err = p.parseIdentifier()
+		if err != nil {
+			return nil, err
+		}
+
+	case tokenizer.Parenthesis:
+		if p.tok.CurrTok().Value == string(tokenizer.LParen) {
+			var err error
+			varv, err = p.parseExpr()
+			if err != nil {
+				return nil, err
+			}
+			break
+		}
+		fallthrough
+
+	default:
+		return nil, p.getError(ps, "expected identifier or parenthesis")
 	}
 
 	// Semicolon
@@ -33,7 +49,7 @@ func (p *Parser) parseAssign(expr Node) (Node, error) {
 		BasicNode: &BasicNode{
 			pos: ps,
 		},
-		Variable: varname,
+		Variable: varv,
 		Value:    expr,
 	}, nil
 }

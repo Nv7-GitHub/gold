@@ -44,14 +44,20 @@ func (c *CGen) addConst(val *ir.Const) (*Value, error) {
 
 func (c *CGen) addDef(s *ir.DefCall) (*Value, error) {
 	code := fmt.Sprintf("%s %s%s", c.GetCType(s.Typ), Namespace, s.Name)
-	_, exists := dynamicTyps[s.Typ]
+	_, exists := dynamicTyps[s.Typ.BasicType()]
 	if exists {
 		freeCode := c.GetFreeCode(s.Typ, Namespace+s.Name)
 		c.scope.AddFree(freeCode)
 	}
+
+	destruct := ""
+	if types.ARRAY.Equal(s.Typ) {
+		destruct = fmt.Sprintf("%s%s = array_new(sizeof(%s), 1);", Namespace, s.Name, c.GetCType(s.Typ.(*types.ArrayType).ElemType))
+	}
 	return &Value{
-		Code: code,
-		Type: types.NULL,
+		Code:     code,
+		Destruct: destruct,
+		Type:     types.NULL,
 	}, nil
 }
 
@@ -63,29 +69,31 @@ func (c *CGen) addVarExpr(s *ir.VariableExpr) (*Value, error) {
 }
 
 func (c *CGen) addAssign(s *ir.AssignStmt) (*Value, error) {
-	name := Namespace + s.Variable
+	lhs, err := c.addNode(s.Variable)
+	if err != nil {
+		return nil, err
+	}
+
 	v, err := c.addNode(s.Value)
 	if err != nil {
 		return nil, err
 	}
-	setup := v.Setup
+	setup := ""
 	grabCode := ""
-	_, exists := dynamicTyps[s.Type()]
+	_, exists := dynamicTyps[s.Type().BasicType()]
 	if exists {
-		if setup != "" {
-			setup += ";"
-		}
-		setup = c.GetFreeCode(s.Type(), s.Variable) + ";\n" + v.Grab
-		grabCode = c.GetGrabCode(s.Type(), name)
+		setup = c.GetFreeCode(s.Type(), lhs.Code) + ";\n" + v.Grab
+		grabCode = c.GetGrabCode(s.Type(), lhs.Code)
 	}
-	code := fmt.Sprintf("%s = %s", name, v.Code)
+	code := fmt.Sprintf("%s = %s", lhs.Code, v.Code)
 
 	return &Value{
-		Setup:   setup,
-		Code:    code,
-		Type:    s.Type(),
-		CanGrab: exists,
-		Grab:    grabCode,
+		Setup:    JoinCode(lhs.Setup, v.Setup, setup),
+		Destruct: JoinCode(lhs.Destruct, v.Destruct),
+		Code:     code,
+		Type:     s.Type(),
+		CanGrab:  exists,
+		Grab:     grabCode,
 	}, nil
 }
 

@@ -46,7 +46,7 @@ func (c *CGen) BuildStmts(stmts []ir.Node) (string, error) {
 		}
 		code.WriteString(v.Code)
 		code.WriteString(";")
-		if i != len(stmts)-1 {
+		if i != len(stmts)-1 || len(v.Destruct) > 0 {
 			code.WriteString("\n")
 		}
 		if len(v.Destruct) > 0 {

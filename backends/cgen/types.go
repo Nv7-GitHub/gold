@@ -8,8 +8,9 @@ import (
 
 const Namespace = "gold__"
 
-var dynamicTyps = map[types.Type]empty{
+var dynamicTyps = map[types.BasicType]empty{
 	types.STRING: {},
+	types.ARRAY:  {},
 }
 
 type Value struct {
@@ -42,6 +43,7 @@ func (c *CGen) GetCType(typ types.Type) string {
 		return "string*"
 
 	case types.ARRAY:
+		c.RequireSnippet("arrays.c")
 		return "array*"
 
 	case types.MAP:
@@ -53,9 +55,20 @@ func (c *CGen) GetCType(typ types.Type) string {
 }
 
 func (c *CGen) GetFreeCode(typ types.Type, varName string) string {
-	switch typ {
-	case types.STRING:
+	switch {
+	case types.STRING.Equal(typ):
 		return fmt.Sprintf("string_free(%s);", varName)
+
+	case types.ARRAY.Equal(typ):
+		elType := typ.(*types.ArrayType).ElemType
+		_, exists := dynamicTyps[elType.BasicType()]
+		if exists {
+			tmpV := c.tmpcnt
+			c.tmpcnt++
+			elFree := c.GetFreeCode(elType, fmt.Sprintf("(%s)%s[i%d]", c.GetCType(elType), varName, tmpV))
+			return fmt.Sprintf("for (int i%d = 0; i%d < %s->len; i%d++) {\n\t%s}\narray_free(%s);", tmpV, tmpV, varName, tmpV, elFree, varName)
+		}
+		return fmt.Sprintf("array_free(%s);", varName)
 
 	default:
 		return ""

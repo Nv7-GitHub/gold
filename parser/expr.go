@@ -79,10 +79,11 @@ func (p *Parser) parseIndex() (Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	p.tok.Eat()
 	tok := p.tok.CurrTok()
 	if tok.Type != tokenizer.Parenthesis && tok.Value != string(tokenizer.RBrack) {
 		return nil, p.getError(tok.Pos, "expected \"]\"")
+	} else {
+		p.tok.Eat()
 	}
 
 	// Get value

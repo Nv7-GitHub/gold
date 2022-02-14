@@ -60,7 +60,7 @@ type AssignStmt struct {
 	pos *tokenizer.Pos
 
 	Value    Node
-	Variable string
+	Variable Node
 }
 
 func (a *AssignStmt) Type() types.Type {
@@ -72,18 +72,30 @@ func (a *AssignStmt) Pos() *tokenizer.Pos {
 }
 
 func (b *Builder) buildAssignStmt(n *parser.AssignStmt) (Node, error) {
-	_, exists := b.Scope.GetVar(n.Variable)
-	if !exists {
-		return nil, n.Pos().Error("variable %s not defined", n.Variable)
+	vr, err := b.buildNode(n.Variable, true)
+	if err != nil {
+		return nil, err
+	}
+	_, ok := vr.(*VariableExpr)
+	if !ok {
+		_, ok := vr.(*IndexExpr)
+		if !ok {
+			return nil, vr.Pos().Error("cannot assign to node %T", vr)
+		}
 	}
 
 	v, err := b.buildNode(n.Value)
 	if err != nil {
 		return nil, err
 	}
+
+	if !v.Type().Equal(vr.Type()) {
+		return nil, v.Pos().Error("cannot assign %s to %s", v.Type(), vr.Type())
+	}
+
 	return &AssignStmt{
 		pos:      n.Pos(),
 		Value:    v,
-		Variable: n.Variable,
+		Variable: vr,
 	}, nil
 }
