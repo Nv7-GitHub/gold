@@ -52,7 +52,7 @@ void array_grow(array* a, int len) {
 
 void array_append(array* a, void* val) {
   array_grow(a, a->len + 1);
-  memcpy(array_get(a, a->len), &val, a->elemsize);
+  memcpy(array_get(a, a->len), val, a->elemsize);
   a->len++;
 }
 

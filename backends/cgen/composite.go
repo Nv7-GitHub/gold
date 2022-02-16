@@ -21,14 +21,21 @@ func (c *CGen) addAppendStmt(s *ir.AppendStmt) (*Value, error) {
 	}
 
 	setup := ""
+	_, exists := dynamicTyps[v.Type.BasicType()]
+	if !exists { // If not dynamic, can't get pointer if literal
+		tmp := c.tmpcnt
+		c.tmpcnt++
+		setup = fmt.Sprintf("%s  %sapp_%d = %s;\n", c.GetCType(v.Type), Namespace, tmp, v.Code)
+		v.Code = fmt.Sprintf("%sapp_%d", Namespace, tmp)
+	}
 	if v.CanGrab {
-		setup = v.Grab
+		setup = JoinCode(setup, v.Grab)
 	}
 
 	return &Value{
 		Setup:    JoinCode(array.Setup, v.Setup, setup),
 		Destruct: JoinCode(array.Destruct, v.Destruct),
-		Code:     fmt.Sprintf("array_append(%s, %s)", array.Code, v.Code),
+		Code:     fmt.Sprintf("array_append(%s, &(%s))", array.Code, v.Code),
 		Type:     types.NULL,
 	}, nil
 }
