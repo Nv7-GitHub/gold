@@ -24,7 +24,7 @@ func MatchTypes(pos *tokenizer.Pos, args []Node, typs []types.Type) error {
 		return pos.Error("wrong number of arguments: expected %d, got %d", len(typs), len(args))
 	}
 	for i, arg := range args {
-		if !arg.Type().Equal(typs[i]) {
+		if !typs[i].Equal(arg.Type()) {
 			return arg.Pos().Error("wrong argument type: expected %s, got %s", typs[i], arg.Type())
 		}
 	}

@@ -24,6 +24,9 @@ func (c *CGen) addNode(s ir.Node) (*Value, error) {
 		case *ir.StringCast:
 			return c.addStringCast(call)
 
+		case *ir.AppendStmt:
+			return c.addAppendStmt(call)
+
 		default:
 			return nil, s.Pos().Error("unknown call node: %T", call)
 		}
@@ -54,6 +57,9 @@ func (c *CGen) addNode(s ir.Node) (*Value, error) {
 
 	case *ir.ComparisonExpr:
 		return c.addComparison(n)
+
+	case *ir.IndexExpr:
+		return c.addIndexExpr(n)
 
 	default:
 		return nil, s.Pos().Error("unknown node: %T", n)

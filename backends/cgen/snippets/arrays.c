@@ -21,8 +21,13 @@ array* array_new(int elemsize, int cap) {
   return a;
 }
 
-void* array_get(array* a, int i) {
+// Get pointer to element at index i.
+static inline void* array_get(array* a, int i) {
   return a->data + (i * a->elemsize);
+}
+
+static inline void* array_ind(array* a, int i) {
+  return *((void**)(a->data + (i * a->elemsize))); // Dereference
 }
 
 void array_free(array* a) {
@@ -37,21 +42,21 @@ void array_free(array* a) {
   }
 }
 
-void array_append(array* a, void* val) {
-  if (a->len == a->cap) {
-    a->cap *= 2;
-    a->data = realloc(a->data, a->elemsize * a->cap);
-  }
-
-  memcpy(array_get(a, a->len), val, a->elemsize);
-  a->len++;
-}
-
+// static means it can only be used in this file, doesn't matter since there is only one file
 void array_grow(array* a, int len) {
   if (a->cap < len) {
     a->cap = len;
     a->data = realloc(a->data, a->elemsize * a->cap);
   }
+}
 
+void array_append(array* a, void* val) {
+  array_grow(a, a->len + 1);
+  memcpy(array_get(a, a->len), &val, a->elemsize);
+  a->len++;
+}
+
+void array_grow_gold(array* a, int len) {
+  array_grow(a, len);
   a->len = len;
 }

@@ -30,6 +30,8 @@ var basicTypeNames = map[BasicType]string{
 	FLOAT:  "float",
 	STRING: "string",
 	BOOL:   "bool",
+	ARRAY:  "array",
+	MAP:    "map",
 	NULL:   "null",
 }
 

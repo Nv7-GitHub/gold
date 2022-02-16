@@ -28,9 +28,9 @@ print (sum);
 # Arrays
 def a int[];
 
-append a 1;
-append a 2;
-append a 3;
+append (a) 1;
+append (a) 2;
+append (a) 3;
 
 grow a 4;
 (0) => ([3]a);

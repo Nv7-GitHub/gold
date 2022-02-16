@@ -65,8 +65,8 @@ func (c *CGen) GetFreeCode(typ types.Type, varName string) string {
 		if exists {
 			tmpV := c.tmpcnt
 			c.tmpcnt++
-			elFree := c.GetFreeCode(elType, fmt.Sprintf("(%s)%s[i%d]", c.GetCType(elType), varName, tmpV))
-			return fmt.Sprintf("for (int i%d = 0; i%d < %s->len; i%d++) {\n\t%s}\narray_free(%s);", tmpV, tmpV, varName, tmpV, elFree, varName)
+			elFree := c.GetFreeCode(elType, fmt.Sprintf("(%s)array_ind(%s, i%d)", c.GetCType(elType), varName, tmpV))
+			return fmt.Sprintf("for (int i%d = 0; i%d < %s->len; i%d++) {\n\t%s\n}\narray_free(%s);", tmpV, tmpV, varName, tmpV, elFree, varName)
 		}
 		return fmt.Sprintf("array_free(%s);", varName)
 
@@ -77,7 +77,7 @@ func (c *CGen) GetFreeCode(typ types.Type, varName string) string {
 
 func (c *CGen) GetGrabCode(typ types.Type, varName string) string {
 	switch typ {
-	case types.STRING:
+	case types.STRING, types.ARRAY:
 		return fmt.Sprintf("%s->refs++;", varName)
 
 	default:

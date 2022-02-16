@@ -34,7 +34,7 @@ func (c *CGen) addConst(val *ir.Const) (*Value, error) {
 			Code:    varname,
 			Type:    types.STRING,
 			CanGrab: true,
-			Grab:    fmt.Sprintf("%s->refs++", varname),
+			Grab:    fmt.Sprintf("%s->refs++;", varname),
 		}, nil
 
 	default:
@@ -62,9 +62,19 @@ func (c *CGen) addDef(s *ir.DefCall) (*Value, error) {
 }
 
 func (c *CGen) addVarExpr(s *ir.VariableExpr) (*Value, error) {
+	name := Namespace + s.Name
+	grabCode := ""
+	_, exists := dynamicTyps[s.Type().BasicType()]
+	if exists {
+		grabCode = c.GetGrabCode(s.Type(), name)
+	}
+
 	return &Value{
-		Code: fmt.Sprintf("%s%s", Namespace, s.Name),
+		Code: name,
 		Type: s.Type(),
+
+		CanGrab: exists,
+		Grab:    grabCode,
 	}, nil
 }
 
@@ -164,6 +174,6 @@ func (c *CGen) addStringCast(s *ir.StringCast) (*Value, error) {
 		Code:     varname,
 		Type:     types.STRING,
 		CanGrab:  true,
-		Grab:     fmt.Sprintf("%s->refs++", varname),
+		Grab:     fmt.Sprintf("%s->refs++;", varname),
 	}, nil
 }

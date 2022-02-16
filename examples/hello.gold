@@ -1,3 +1,9 @@
 print "Hello, World!"; # This is a comment
 
 def a int[];
+append (a) 1;
+print ([0]a);
+
+def b string[];
+append (b) "Hello!";
+print ([0]b);
