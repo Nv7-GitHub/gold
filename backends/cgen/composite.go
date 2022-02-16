@@ -51,7 +51,7 @@ func (c *CGen) addIndexExpr(s *ir.IndexExpr) (*Value, error) {
 	}
 
 	// Assumes arrays, TODO: support maps
-	name := fmt.Sprintf("((%s)array_ind(%s, %s))", c.GetCType(s.Type()), v.Code, ind.Code)
+	name := fmt.Sprintf("(*((%s*)array_get(%s, %s)))", c.GetCType(s.Type()), v.Code, ind.Code)
 	grabCode := ""
 	_, exists := dynamicTyps[s.Type().BasicType()]
 	if exists {

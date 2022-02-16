@@ -26,10 +26,6 @@ static inline void* array_get(array* a, int i) {
   return a->data + (i * a->elemsize);
 }
 
-static inline void* array_ind(array* a, int i) {
-  return *((void**)(a->data + (i * a->elemsize))); // Dereference
-}
-
 void array_free(array* a) {
   if (a == NULL) {
     return;

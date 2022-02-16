@@ -65,7 +65,7 @@ func (c *CGen) GetFreeCode(typ types.Type, varName string) string {
 		if exists {
 			tmpV := c.tmpcnt
 			c.tmpcnt++
-			elFree := c.GetFreeCode(elType, fmt.Sprintf("(%s)array_ind(%s, i%d)", c.GetCType(elType), varName, tmpV))
+			elFree := c.GetFreeCode(elType, fmt.Sprintf("*((%s*)array_get(%s, i%d))", c.GetCType(elType), varName, tmpV))
 			return fmt.Sprintf("for (int i%d = 0; i%d < %s->len; i%d++) {\n\t%s\n}\narray_free(%s);", tmpV, tmpV, varName, tmpV, elFree, varName)
 		}
 		return fmt.Sprintf("array_free(%s);", varName)
