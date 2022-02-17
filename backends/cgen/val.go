@@ -66,6 +66,15 @@ func (c *CGen) addDef(pos *tokenizer.Pos, s *ir.DefCall) (*Value, error) {
 			if err != nil {
 				return nil, err
 			}
+		} else {
+			frFn := "NULL"
+			mapTyp := s.Typ.(*types.MapType)
+			_, exists1 := dynamicTyps[mapTyp.KeyType.BasicType()]
+			_, exists2 := dynamicTyps[mapTyp.ValType.BasicType()]
+			if exists1 || exists2 {
+				frFn = fmt.Sprintf("%s_free", c.getTypName(mapTyp))
+			}
+			freeFn = &frFn
 		}
 		destruct = fmt.Sprintf("%s%s%d = map_new(sizeof(struct %s), %s_compare, %s_hash, %s);", Namespace, v.Name, v.ID, c.getTypName(s.Typ), c.getTypName(s.Typ), c.getTypName(s.Typ), *freeFn)
 	}

@@ -42,3 +42,14 @@ def map map{string}string;
 ("Hello") => (["Hi"]map);
 ("Hello, World!") => (["Hi"]map); # Original value will be freed 
 print (["Hi"]map);
+
+# Nested maps
+def m map{string}map{string}string;
+def v map{string}string;
+(v) => (["Sup"]m); # Need to allocate the key by using v
+# NOTE: Any changes to v will also apply to the "Sup" key of m
+
+# Nested assigns
+("Hello!") => (["Hi"]["Sup"]m);
+
+print (["Hi"]["Sup"]m);
