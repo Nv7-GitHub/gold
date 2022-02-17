@@ -1,15 +1,2 @@
-def vals string{};
-grow (vals) 10;
-
-def i int;
-(0) => i;
-while (i < 10) do
-  str (i + 1) => ([i]vals);
-  (i + 1) => i;
-end
-
-(0) => i;
-while (i < 10) do
-  print ([i]vals);
-  (i + 1) => i;
-end
+def a map{string}string;
+set (a) "Hi" "Hello";

@@ -47,7 +47,8 @@ func (c *CGen) GetCType(typ types.Type) string {
 		return "array*"
 
 	case types.MAP:
-		return "map_not_implemented"
+		c.RequireSnippet("map.c")
+		return "not implemented"
 
 	default:
 		return "unknown"
@@ -100,6 +101,9 @@ func (c *CGen) GetFreeCode(typ types.Type, varName string) string {
 		}
 		return fmt.Sprintf("array_free(%s, %s);", varName, freeFn)
 
+	case types.MAP.Equal(typ):
+		return "not implemented"
+
 	default:
 		return ""
 	}
@@ -109,6 +113,9 @@ func (c *CGen) GetGrabCode(typ types.Type, varName string) string {
 	switch typ {
 	case types.STRING, types.ARRAY:
 		return fmt.Sprintf("%s->refs++;", varName)
+
+	case types.MAP:
+		return "not implemented"
 
 	default:
 		return ""

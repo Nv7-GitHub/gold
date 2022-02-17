@@ -49,7 +49,7 @@ func ParseType(typ string) (Type, error) {
 		if err != nil {
 			return nil, err
 		}
-		valTyp, err := ParseType(typ)
+		valTyp, err := ParseType(typ[1:])
 		if err != nil {
 			return nil, err
 		}
