@@ -13,6 +13,7 @@ type CGen struct {
 
 	top      *strings.Builder
 	types    *strings.Builder
+	mapFns   map[string]empty
 	freeFns  map[string]empty
 	snippets map[string]empty
 	imports  map[string]empty
@@ -28,6 +29,7 @@ func NewCGen(i *ir.IR) *CGen {
 
 		top:      &strings.Builder{},
 		types:    &strings.Builder{},
+		mapFns:   make(map[string]empty),
 		freeFns:  make(map[string]empty),
 		snippets: make(map[string]empty),
 		imports:  make(map[string]empty),

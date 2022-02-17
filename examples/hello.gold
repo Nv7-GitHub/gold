@@ -1,2 +1,1 @@
-def a map{string}string;
-set (a) "Hi" "Hello";
+print "Hello, World!"; # This is a comment

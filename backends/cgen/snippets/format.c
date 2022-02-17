@@ -18,3 +18,7 @@ string* string_ftoa(float val) {
   s->is_static = false;
   return s;
 }
+
+static inline string* string_btoa(bool val) {
+  return val ? string_new("true", 4) : string_new("false", 5);
+}

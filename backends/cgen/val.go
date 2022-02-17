@@ -43,7 +43,7 @@ func (c *CGen) addConst(val *ir.Const) (*Value, error) {
 	}
 }
 
-func (c *CGen) addDef(s *ir.DefCall) (*Value, error) {
+func (c *CGen) addDef(pos *tokenizer.Pos, s *ir.DefCall) (*Value, error) {
 	v := c.ir.Variables[s.Variable]
 	code := fmt.Sprintf("%s %s%s%d", c.GetCType(s.Typ), Namespace, v.Name, v.ID)
 	_, exists := dynamicTyps[s.Typ.BasicType()]
@@ -55,6 +55,19 @@ func (c *CGen) addDef(s *ir.DefCall) (*Value, error) {
 	destruct := ""
 	if types.ARRAY.Equal(s.Typ) {
 		destruct = fmt.Sprintf("%s%s%d = array_new(sizeof(%s), 1);", Namespace, v.Name, v.ID, c.GetCType(s.Typ.(*types.ArrayType).ElemType))
+	}
+	if types.MAP.Equal(s.Typ) {
+		_, exists := c.mapFns[c.getTypName(s.Typ)]
+		var freeFn *string
+		if !exists {
+			var err error
+			mapTyp := s.Typ.(*types.MapType)
+			freeFn, err = c.addMapTyp(pos, mapTyp)
+			if err != nil {
+				return nil, err
+			}
+		}
+		destruct = fmt.Sprintf("%s%s%d = map_new(sizeof(struct %s), %s_compare, %s_hash, %s);", Namespace, v.Name, v.ID, c.getTypName(s.Typ), c.getTypName(s.Typ), c.getTypName(s.Typ), *freeFn)
 	}
 	return &Value{
 		Code:     code,
@@ -154,6 +167,24 @@ func (c *CGen) addComparison(s *ir.ComparisonExpr) (*Value, error) {
 	}, nil
 }
 
+func (c *CGen) addStringEq(s *ir.StringEq) (*Value, error) {
+	lhs, err := c.addNode(s.Lhs)
+	if err != nil {
+		return nil, err
+	}
+	rhs, err := c.addNode(s.Rhs)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Value{
+		Setup:    JoinCode(lhs.Setup, rhs.Setup),
+		Destruct: JoinCode(lhs.Destruct, rhs.Destruct),
+		Code:     fmt.Sprintf("string_equal(%s, %s)", lhs.Code, rhs.Code),
+		Type:     types.BOOL,
+	}, nil
+}
+
 func (c *CGen) addStringCast(s *ir.StringCast) (*Value, error) {
 	c.RequireSnippet("format.c")
 
@@ -168,6 +199,9 @@ func (c *CGen) addStringCast(s *ir.StringCast) (*Value, error) {
 
 	case v.Type.Equal(types.FLOAT):
 		code = fmt.Sprintf("string_ftoa(%s)", v.Code)
+
+	case v.Type.Equal(types.BOOL):
+		code = fmt.Sprintf("string_btoa(%s)", v.Code)
 	}
 
 	varname := fmt.Sprintf("%sstring_%d", Namespace, c.tmpcnt)

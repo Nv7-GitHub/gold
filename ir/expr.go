@@ -47,6 +47,15 @@ type LogicalExpr struct {
 func (l *LogicalExpr) Pos() *tokenizer.Pos { return l.pos }
 func (l *LogicalExpr) Type() types.Type    { return types.BOOL }
 
+type StringEq struct {
+	pos *tokenizer.Pos
+	Lhs Node
+	Rhs Node
+}
+
+func (s *StringEq) Pos() *tokenizer.Pos { return s.pos }
+func (s *StringEq) Type() types.Type    { return types.BOOL }
+
 func (b *Builder) buildBinaryExpr(n *parser.BinaryExpr) (Node, error) {
 	lhs, err := b.buildNode(n.Lhs, true)
 	if err != nil {
@@ -62,6 +71,13 @@ func (b *Builder) buildBinaryExpr(n *parser.BinaryExpr) (Node, error) {
 		return b.buildMathOp(n, lhs, rhs)
 
 	case tokenizer.Eq, tokenizer.Ne, tokenizer.Gt, tokenizer.Lt:
+		if n.Op == tokenizer.Eq && types.STRING.Equal(lhs.Type()) && types.STRING.Equal(rhs.Type()) {
+			return &StringEq{
+				pos: n.Pos(),
+				Lhs: lhs,
+				Rhs: rhs,
+			}, nil
+		}
 		return b.buildComparisonOp(n, lhs, rhs)
 
 	case tokenizer.And, tokenizer.Or:

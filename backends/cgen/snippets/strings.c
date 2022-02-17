@@ -42,3 +42,10 @@ string* string_concat(string* a, string* b) {
   c->data = data;
   return c;
 }
+
+bool string_equal(string* a, string* b) {
+  if (a->len != b->len) {
+    return false;
+  }
+  return memcmp(a->data, b->data, a->len) == 0;
+}

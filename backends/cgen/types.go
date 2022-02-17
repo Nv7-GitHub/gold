@@ -11,6 +11,7 @@ const Namespace = "gold__"
 var dynamicTyps = map[types.BasicType]empty{
 	types.STRING: {},
 	types.ARRAY:  {},
+	types.MAP:    {},
 }
 
 type Value struct {
@@ -48,7 +49,7 @@ func (c *CGen) GetCType(typ types.Type) string {
 
 	case types.MAP:
 		c.RequireSnippet("map.c")
-		return "not implemented"
+		return "map*"
 
 	default:
 		return "unknown"
@@ -102,7 +103,7 @@ func (c *CGen) GetFreeCode(typ types.Type, varName string) string {
 		return fmt.Sprintf("array_free(%s, %s);", varName, freeFn)
 
 	case types.MAP.Equal(typ):
-		return "not implemented"
+		return fmt.Sprintf("map_free(%s);", varName)
 
 	default:
 		return ""
@@ -111,11 +112,8 @@ func (c *CGen) GetFreeCode(typ types.Type, varName string) string {
 
 func (c *CGen) GetGrabCode(typ types.Type, varName string) string {
 	switch typ {
-	case types.STRING, types.ARRAY:
+	case types.STRING, types.ARRAY, types.MAP:
 		return fmt.Sprintf("%s->refs++;", varName)
-
-	case types.MAP:
-		return "not implemented"
 
 	default:
 		return ""
