@@ -74,23 +74,6 @@ type GrowStmt struct {
 
 func (g *GrowStmt) Type() types.Type { return types.NULL }
 
-type SetStmt struct {
-	Map   Node
-	Key   Node
-	Value Node
-}
-
-func (s *SetStmt) Type() types.Type { return types.NULL }
-
-type GetStmt struct {
-	Map Node
-	Key Node
-
-	typ types.Type
-}
-
-func (g *GetStmt) Type() types.Type { return g.typ }
-
 func init() {
 	builders["append"] = nodeBuilder{
 		ParamTyps: []types.Type{types.ARRAY, types.ANY},
@@ -113,39 +96,6 @@ func init() {
 			return &GrowStmt{
 				Array: args[0],
 				Size:  args[1],
-			}, nil
-		},
-	}
-
-	builders["set"] = nodeBuilder{
-		ParamTyps: []types.Type{types.MAP, types.ANY, types.ANY},
-		Build: func(b *Builder, pos *tokenizer.Pos, args []Node) (Call, error) {
-			mapTyp := args[0].Type().(*types.MapType)
-			if !args[1].Type().Equal(mapTyp.KeyType) {
-				return nil, args[1].Pos().Error("expected type %s, got type %s", mapTyp.KeyType.String(), args[1].Type().String())
-			}
-			if !args[2].Type().Equal(mapTyp.ValType) {
-				return nil, args[2].Pos().Error("expected type %s, got type %s", mapTyp.ValType.String(), args[2].Type().String())
-			}
-			return &SetStmt{
-				Map:   args[0],
-				Key:   args[1],
-				Value: args[2],
-			}, nil
-		},
-	}
-
-	builders["get"] = nodeBuilder{
-		ParamTyps: []types.Type{types.MAP, types.ANY},
-		Build: func(b *Builder, pos *tokenizer.Pos, args []Node) (Call, error) {
-			mapTyp := args[0].Type().(*types.MapType)
-			if !args[1].Type().Equal(mapTyp.KeyType) {
-				return nil, args[1].Pos().Error("expected type %s, got type %s", mapTyp.KeyType.String(), args[1].Type().String())
-			}
-			return &GetStmt{
-				Map: args[0],
-				Key: args[1],
-				typ: mapTyp.ValType,
 			}, nil
 		},
 	}

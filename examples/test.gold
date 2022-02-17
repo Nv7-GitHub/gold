@@ -39,9 +39,6 @@ print ([0]a);
 
 # Maps
 def map map{string}string;
-set (map) "Hi" "Hello";
-set (map) "Hi" "Hello, World!"; # Original value will be freed
-
-def out string;
-get (map) "Hi" => out;
-print (out);
+("Hello") => (["Hi"]map);
+("Hello, World!") => (["Hi"]map); # Original value will be freed 
+print (["Hi"]map);

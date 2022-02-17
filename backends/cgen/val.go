@@ -95,6 +95,24 @@ func (c *CGen) addVarExpr(s *ir.VariableExpr) (*Value, error) {
 }
 
 func (c *CGen) addAssign(s *ir.AssignStmt) (*Value, error) {
+	// Is map assign?
+	a, ok := s.Variable.(*ir.IndexExpr)
+	if ok && types.MAP.Equal(a.Value.Type()) {
+		m, err := c.addNode(a.Value)
+		if err != nil {
+			return nil, err
+		}
+		k, err := c.addNode(a.Index)
+		if err != nil {
+			return nil, err
+		}
+		v, err := c.addNode(s.Value)
+		if err != nil {
+			return nil, err
+		}
+		return c.addMapSet(m, k, v, a.Value.Type().(*types.MapType))
+	}
+
 	lhs, err := c.addNode(s.Variable)
 	if err != nil {
 		return nil, err

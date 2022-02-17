@@ -42,6 +42,19 @@ func (c *CGen) addAppendStmt(s *ir.AppendStmt) (*Value, error) {
 }
 
 func (c *CGen) addIndexExpr(s *ir.IndexExpr) (*Value, error) {
+	// Is map?
+	if types.MAP.Equal(s.Value.Type()) {
+		m, err := c.addNode(s.Value)
+		if err != nil {
+			return nil, err
+		}
+		k, err := c.addNode(s.Index)
+		if err != nil {
+			return nil, err
+		}
+		return c.addMapGet(m, k, s.Value.Type().(*types.MapType))
+	}
+
 	v, err := c.addNode(s.Value)
 	if err != nil {
 		return nil, err
@@ -141,20 +154,7 @@ func (c *CGen) addMapTyp(pos *tokenizer.Pos, mapTyp *types.MapType) (*string, er
 	return &freeFn, nil
 }
 
-func (c *CGen) addSetStmt(s *ir.SetStmt) (*Value, error) {
-	m, err := c.addNode(s.Map)
-	if err != nil {
-		return nil, err
-	}
-	k, err := c.addNode(s.Key)
-	if err != nil {
-		return nil, err
-	}
-	v, err := c.addNode(s.Value)
-	if err != nil {
-		return nil, err
-	}
-
+func (c *CGen) addMapSet(m *Value, k, v *Value, mapTyp *types.MapType) (*Value, error) {
 	setup := JoinCode(m.Setup, k.Setup, v.Setup)
 	if k.CanGrab {
 		setup = JoinCode(setup, k.Grab)
@@ -164,14 +164,13 @@ func (c *CGen) addSetStmt(s *ir.SetStmt) (*Value, error) {
 	}
 
 	// Check if has stuff in key already
-	mapTyp := s.Map.Type().(*types.MapType)
 	_, exists := dynamicTyps[mapTyp.KeyType.BasicType()]
 	_, exists2 := dynamicTyps[mapTyp.ValType.BasicType()]
 	if exists || exists2 {
 		tmp := c.tmpcnt
 		c.tmpcnt++
 		mapcheck := fmt.Sprintf("%smapcheck_%d", Namespace, tmp)
-		check := fmt.Sprintf("struct %s* %s = hashmap_get(%s->map, &(struct %s){ .key=%s });\nif (%s != NULL) {\n\t%s_free(%s);\n}\n", c.getTypName(mapTyp), mapcheck, m.Code, c.getTypName(s.Map.Type()), k.Code, mapcheck, c.getTypName(s.Map.Type()), mapcheck)
+		check := fmt.Sprintf("struct %s* %s = hashmap_get(%s->map, &(struct %s){ .key=%s });\nif (%s != NULL) {\n\t%s_free(%s);\n}\n", c.getTypName(mapTyp), mapcheck, m.Code, c.getTypName(mapTyp), k.Code, mapcheck, c.getTypName(mapTyp), mapcheck)
 		setup = JoinCode(setup, check)
 	}
 
@@ -179,36 +178,27 @@ func (c *CGen) addSetStmt(s *ir.SetStmt) (*Value, error) {
 		Setup:    setup,
 		Destruct: JoinCode(m.Destruct, k.Destruct, v.Destruct),
 		Type:     types.NULL,
-		Code:     fmt.Sprintf("hashmap_set(%s->map, &(struct %s){ .key=%s, .val=%s })", m.Code, c.getTypName(s.Map.Type()), k.Code, v.Code),
+		Code:     fmt.Sprintf("hashmap_set(%s->map, &(struct %s){ .key=%s, .val=%s })", m.Code, c.getTypName(mapTyp), k.Code, v.Code),
 	}, nil
 }
 
-func (c *CGen) addGetStmt(s *ir.GetStmt) (*Value, error) {
-	m, err := c.addNode(s.Map)
-	if err != nil {
-		return nil, err
-	}
-	k, err := c.addNode(s.Key)
-	if err != nil {
-		return nil, err
-	}
-
+func (c *CGen) addMapGet(m *Value, k *Value, mapTyp *types.MapType) (*Value, error) {
 	tmp := c.tmpcnt
 	c.tmpcnt++
-	valTyp := s.Map.Type().(*types.MapType).ValType
+	valTyp := mapTyp.ValType
 	name := fmt.Sprintf("%smap_%d", Namespace, tmp)
-	setup := JoinCode(m.Setup, k.Setup, fmt.Sprintf("%s %s = (%s)(((struct %s*)hashmap_get(%s->map, &(struct %s){ .key=%s }))->val);", c.GetCType(valTyp), name, c.GetCType(valTyp), c.getTypName(s.Map.Type()), m.Code, c.getTypName(s.Map.Type()), k.Code))
+	setup := JoinCode(m.Setup, k.Setup, fmt.Sprintf("%s %s = (%s)(((struct %s*)hashmap_get(%s->map, &(struct %s){ .key=%s }))->val);", c.GetCType(valTyp), name, c.GetCType(valTyp), c.getTypName(mapTyp), m.Code, c.getTypName(mapTyp), k.Code))
 
 	grabCode := ""
 	_, exists := dynamicTyps[valTyp.BasicType()]
 	if exists {
-		grabCode = c.GetGrabCode(s.Type(), name)
+		grabCode = c.GetGrabCode(valTyp, name)
 	}
 
 	return &Value{
 		Setup:    setup,
 		Destruct: JoinCode(m.Destruct, k.Destruct),
-		Type:     s.Type(),
+		Type:     valTyp,
 		Code:     name,
 		Grab:     grabCode,
 		CanGrab:  exists,
