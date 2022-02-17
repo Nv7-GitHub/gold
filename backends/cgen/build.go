@@ -56,6 +56,8 @@ func (c *CGen) Build() (string, error) {
 	out.WriteString("\n")
 	out.WriteString(c.top.String())
 	out.WriteString("\n")
+	out.WriteString(c.types.String())
+	out.WriteString("\n")
 	out.WriteString(body.String())
 	return out.String(), nil
 }

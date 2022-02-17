@@ -54,6 +54,31 @@ func (c *CGen) GetCType(typ types.Type) string {
 	}
 }
 
+func (c *CGen) getTypName(typ types.Type) string {
+	switch typ.BasicType() {
+	case types.BOOL:
+		return "bool"
+
+	case types.INT:
+		return "int"
+
+	case types.FLOAT:
+		return "float"
+
+	case types.STRING:
+		return "string"
+
+	case types.ARRAY:
+		return "array_" + c.getTypName(typ.(*types.ArrayType).ElemType)
+
+	case types.MAP:
+		return "map_" + c.getTypName(typ.(*types.MapType).KeyType) + "_" + c.getTypName(typ.(*types.MapType).ValType)
+
+	default:
+		return "unknown"
+	}
+}
+
 func (c *CGen) GetFreeCode(typ types.Type, varName string) string {
 	switch {
 	case types.STRING.Equal(typ):
@@ -62,13 +87,18 @@ func (c *CGen) GetFreeCode(typ types.Type, varName string) string {
 	case types.ARRAY.Equal(typ):
 		elType := typ.(*types.ArrayType).ElemType
 		_, exists := dynamicTyps[elType.BasicType()]
+		freeFn := "NULL"
 		if exists {
-			tmpV := c.tmpcnt
-			c.tmpcnt++
-			elFree := c.GetFreeCode(elType, fmt.Sprintf("*((%s*)array_get(%s, i%d))", c.GetCType(elType), varName, tmpV))
-			return fmt.Sprintf("for (int i%d = 0; i%d < %s->len; i%d++) {\n\t%s\n}\narray_free(%s);", tmpV, tmpV, varName, tmpV, elFree, varName)
+			name := c.getTypName(elType)
+			_, exists := c.freeFns[name]
+			if !exists {
+				elFree := c.GetFreeCode(elType, fmt.Sprintf("*((%s*)array_get(arr, i))", c.GetCType(elType)))
+				loop := fmt.Sprintf("for (int i = 0; i < arr->len; i++) {\n\t%s\n}", elFree)
+				fmt.Fprintf(c.types, "void array_free_%s(array* arr) {\n%s\n}\n", name, Indent(loop))
+			}
+			freeFn = "array_free_" + name
 		}
-		return fmt.Sprintf("array_free(%s);", varName)
+		return fmt.Sprintf("array_free(%s, %s);", varName, freeFn)
 
 	default:
 		return ""

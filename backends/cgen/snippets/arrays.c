@@ -26,13 +26,18 @@ static inline void* array_get(array* a, int i) {
   return a->data + (i * a->elemsize);
 }
 
-void array_free(array* a) {
+typedef void (*array_free_fn)(array*);
+
+void array_free(array* a, array_free_fn free_fn) {
   if (a == NULL) {
     return;
   }
 
   a->refs--;
   if (a->refs == 0) {
+    if (free_fn != NULL) {
+      free_fn(a);
+    }
     free(a->data);
     free(a);
   }
