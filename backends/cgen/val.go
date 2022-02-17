@@ -2,6 +2,7 @@ package cgen
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/Nv7-Github/gold/ir"
 	"github.com/Nv7-Github/gold/tokenizer"
@@ -43,16 +44,17 @@ func (c *CGen) addConst(val *ir.Const) (*Value, error) {
 }
 
 func (c *CGen) addDef(s *ir.DefCall) (*Value, error) {
-	code := fmt.Sprintf("%s %s%s", c.GetCType(s.Typ), Namespace, s.Name)
+	v := c.ir.Variables[s.Variable]
+	code := fmt.Sprintf("%s %s%s%d", c.GetCType(s.Typ), Namespace, v.Name, v.ID)
 	_, exists := dynamicTyps[s.Typ.BasicType()]
 	if exists {
-		freeCode := c.GetFreeCode(s.Typ, Namespace+s.Name)
+		freeCode := c.GetFreeCode(s.Typ, fmt.Sprintf("%s%s%d", Namespace, v.Name, v.ID))
 		c.scope.AddFree(freeCode)
 	}
 
 	destruct := ""
 	if types.ARRAY.Equal(s.Typ) {
-		destruct = fmt.Sprintf("%s%s = array_new(sizeof(%s), 1);", Namespace, s.Name, c.GetCType(s.Typ.(*types.ArrayType).ElemType))
+		destruct = fmt.Sprintf("%s%s%d = array_new(sizeof(%s), 1);", Namespace, v.Name, v.ID, c.GetCType(s.Typ.(*types.ArrayType).ElemType))
 	}
 	return &Value{
 		Code:     code,
@@ -62,7 +64,8 @@ func (c *CGen) addDef(s *ir.DefCall) (*Value, error) {
 }
 
 func (c *CGen) addVarExpr(s *ir.VariableExpr) (*Value, error) {
-	name := Namespace + s.Name
+	v := c.ir.Variables[s.Variable]
+	name := Namespace + v.Name + strconv.Itoa(v.ID)
 	grabCode := ""
 	_, exists := dynamicTyps[s.Type().BasicType()]
 	if exists {

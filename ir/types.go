@@ -6,13 +6,15 @@ import (
 )
 
 type IR struct {
-	Funcs map[string]*Func
-	Nodes []Node
+	Funcs     map[string]*Func
+	Nodes     []Node
+	Variables []*Variable
 }
 
 type FuncParam struct {
-	Name string
-	Type types.Type
+	Name  string
+	VarID int
+	Type  types.Type
 }
 
 type Func struct {
@@ -65,20 +67,21 @@ func (b *BlockNode) Type() types.Type {
 }
 
 type Builder struct {
-	Scope *ScopeStack
-	Funcs map[string]*Func
+	Scope     *ScopeStack
+	Variables []*Variable
+	Funcs     map[string]*Func
 }
 
 func NewBuilder() *Builder {
 	return &Builder{
-		Scope: NewScopeStack(),
+		Scope:     NewScopeStack(),
+		Variables: make([]*Variable, 0),
 	}
 }
 
 type ScopeStack struct {
 	scopes   []*Scope
 	scopecnt map[ScopeType]int
-	vars     map[string]*Variable
 }
 
 func (s *ScopeStack) HasScope(t ScopeType) bool {
@@ -102,7 +105,6 @@ func NewScopeStack() *ScopeStack {
 	s := &ScopeStack{
 		scopes:   make([]*Scope, 0, 1),
 		scopecnt: make(map[ScopeType]int, 1),
-		vars:     make(map[string]*Variable),
 	}
 	return s
 }
@@ -135,6 +137,7 @@ func NewScope(typ ScopeType) *Scope {
 }
 
 type Variable struct {
+	ID   int
 	Name string
 	Type types.Type
 }

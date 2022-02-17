@@ -14,23 +14,19 @@ func (s *ScopeStack) Pop() {
 	c := s.Curr()
 	c.parent = nil
 	s.scopecnt[c.Type]--
-	for v := range c.Variables {
-		delete(s.vars, v)
-	}
 	s.scopes = s.scopes[:len(s.scopes)-1]
 }
 
-func (s *Scope) AddVar(name string, v *Variable) bool {
-	_, exists := s.parent.vars[name]
-	if exists {
-		return true
-	}
-	s.Variables[name] = v
-	s.parent.vars[name] = v
-	return false
+func (s *Scope) AddVar(v *Variable) {
+	s.Variables[v.Name] = v
 }
 
 func (s *ScopeStack) GetVar(name string) (*Variable, bool) {
-	v, exists := s.vars[name]
-	return v, exists
+	for i := len(s.scopes) - 1; i >= 0; i-- {
+		v, exists := s.scopes[i].Variables[name]
+		if exists {
+			return v, true
+		}
+	}
+	return nil, false
 }

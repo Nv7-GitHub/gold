@@ -7,8 +7,8 @@ import (
 )
 
 type DefCall struct {
-	Name string
-	Typ  types.Type
+	Variable int
+	Typ      types.Type
 }
 
 func (d *DefCall) Type() types.Type { return types.NULL }
@@ -42,15 +42,16 @@ func init() {
 			}
 
 			// Save
-			if b.Scope.Curr().AddVar(name.Value.(string), &Variable{
+			v := &Variable{
+				ID:   len(b.Variables),
 				Name: name.Value.(string),
 				Type: t,
-			}) {
-				return nil, pos.Error("variable %s already defined", name.Value.(string))
 			}
+			b.Variables = append(b.Variables, v)
+			b.Scope.Curr().AddVar(v)
 			return &DefCall{
-				Name: name.Value.(string),
-				Typ:  t,
+				Variable: v.ID,
+				Typ:      t,
 			}, nil
 		},
 	}

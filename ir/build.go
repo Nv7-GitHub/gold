@@ -36,8 +36,9 @@ func (b *Builder) Build(p *parser.Parser) (*IR, error) {
 	b.Scope.Pop()
 
 	return &IR{
-		Funcs: b.Funcs,
-		Nodes: out,
+		Funcs:     b.Funcs,
+		Nodes:     out,
+		Variables: b.Variables,
 	}, nil
 }
 
@@ -53,9 +54,9 @@ func (b *Builder) buildNode(node parser.Node, inexpr ...bool) (Node, error) {
 				return nil, node.Pos().Error("unknown variable: %s", n.Val.(string))
 			}
 			return &VariableExpr{
-				pos:  n.Pos(),
-				typ:  v.Type,
-				Name: n.Val.(string),
+				pos:      n.Pos(),
+				typ:      v.Type,
+				Variable: v.ID,
 			}, nil
 		}
 		return &Const{
@@ -101,9 +102,9 @@ func (c *Const) Pos() *tokenizer.Pos {
 }
 
 type VariableExpr struct {
-	pos  *tokenizer.Pos
-	Name string
-	typ  types.Type
+	pos      *tokenizer.Pos
+	Variable int
+	typ      types.Type
 }
 
 func (v *VariableExpr) Pos() *tokenizer.Pos { return v.pos }

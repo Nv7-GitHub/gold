@@ -154,11 +154,15 @@ func (b *Builder) functionPass(p *parser.Parser) error {
 		s := NewScope(ScopeTypeFunction)
 		s.FuncName = name
 		b.Scope.PushScope(s)
-		for _, param := range fn.Params {
-			s.AddVar(param.Name, &Variable{
+		for i, param := range fn.Params {
+			v := &Variable{
+				ID:   len(b.Variables),
 				Name: param.Name,
 				Type: param.Type,
-			})
+			}
+			fn.Params[i].VarID = v.ID
+			b.Variables = append(b.Variables, v)
+			s.AddVar(v)
 		}
 
 		// Build
