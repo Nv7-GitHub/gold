@@ -67,6 +67,13 @@ type AppendStmt struct {
 
 func (a *AppendStmt) Type() types.Type { return types.NULL }
 
+type GrowStmt struct {
+	Array Node
+	Size  Node
+}
+
+func (g *GrowStmt) Type() types.Type { return types.NULL }
+
 func init() {
 	builders["append"] = nodeBuilder{
 		ParamTyps: []types.Type{types.ARRAY, types.ANY},
@@ -79,6 +86,16 @@ func init() {
 			return &AppendStmt{
 				Array: args[0],
 				Val:   args[1],
+			}, nil
+		},
+	}
+
+	builders["grow"] = nodeBuilder{
+		ParamTyps: []types.Type{types.ARRAY, types.INT},
+		Build: func(b *Builder, pos *tokenizer.Pos, args []Node) (Call, error) {
+			return &GrowStmt{
+				Array: args[0],
+				Size:  args[1],
 			}, nil
 		},
 	}

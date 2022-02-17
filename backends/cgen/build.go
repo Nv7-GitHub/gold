@@ -2,6 +2,7 @@ package cgen
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -21,6 +22,7 @@ func (c *CGen) Build() (string, error) {
 			body.WriteString(" ")
 			body.WriteString(Namespace)
 			body.WriteString(par.Name)
+			body.WriteString(strconv.Itoa(par.VarID))
 			if i != len(fn.Params)-1 {
 				body.WriteString(", ")
 			}

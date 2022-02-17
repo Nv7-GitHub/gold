@@ -66,3 +66,19 @@ func (c *CGen) addIndexExpr(s *ir.IndexExpr) (*Value, error) {
 		Grab:    grabCode,
 	}, nil
 }
+
+func (c *CGen) addGrowStmt(s *ir.GrowStmt) (*Value, error) {
+	v, err := c.addNode(s.Array)
+	if err != nil {
+		return nil, err
+	}
+	ind, err := c.addNode(s.Size)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Value{
+		Code: fmt.Sprintf("array_grow_gold(%s, %s)", v.Code, ind.Code),
+		Type: types.NULL,
+	}, nil
+}

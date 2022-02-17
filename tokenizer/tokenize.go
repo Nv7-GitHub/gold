@@ -147,7 +147,7 @@ func (t *Tokenizer) numLiteral() Token {
 }
 
 func isLetter(val rune) bool {
-	return val == rune(LBrack) || val == rune(RBrack) || unicode.IsLetter(val)
+	return val == '{' || val == '}' || unicode.IsLetter(val)
 }
 
 func (t *Tokenizer) identifier() Token {

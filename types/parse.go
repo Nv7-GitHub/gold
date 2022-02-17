@@ -14,14 +14,14 @@ func ParseType(typ string) (Type, error) {
 				return k, nil
 			}
 
-			if typ == v+"[]" { // Array
+			if typ == v+"{}" { // Array
 				return NewArrayType(k), nil
 			}
 		}
 	}
 
 	// Map or nothing
-	if strings.HasPrefix(typ, "map[") {
+	if strings.HasPrefix(typ, "map{") {
 		// Get key and value types
 		typ = typ[4:]
 
@@ -30,9 +30,9 @@ func ParseType(typ string) (Type, error) {
 		key := ""
 		for len(typ) > 0 {
 			c := typ[0]
-			if c == '[' {
+			if c == '{' {
 				openBrackets++
-			} else if c == ']' {
+			} else if c == '}' {
 				openBrackets--
 			}
 

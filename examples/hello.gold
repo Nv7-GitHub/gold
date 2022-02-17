@@ -1,9 +1,15 @@
-print "Hello, World!"; # This is a comment
+def vals string{};
+grow (vals) 10;
 
-def a int[];
-append (a) 1;
-print ([0]a);
+def i int;
+(0) => i;
+while (i < 10) do
+  str (i + 1) => ([i]vals);
+  (i + 1) => i;
+end
 
-def b string[];
-append (b) "Hello!";
-print ([0]b);
+(0) => i;
+while (i < 10) do
+  print ([i]vals);
+  (i + 1) => i;
+end

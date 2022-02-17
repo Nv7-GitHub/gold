@@ -99,6 +99,9 @@ func (c *CGen) addAssign(s *ir.AssignStmt) (*Value, error) {
 		grabCode = c.GetGrabCode(s.Type(), lhs.Code)
 	}
 	code := fmt.Sprintf("%s = %s", lhs.Code, v.Code)
+	if v.CanGrab {
+		setup = JoinCode(setup, v.Grab)
+	}
 
 	return &Value{
 		Setup:    JoinCode(lhs.Setup, v.Setup, setup),

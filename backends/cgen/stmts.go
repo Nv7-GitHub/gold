@@ -27,6 +27,9 @@ func (c *CGen) addNode(s ir.Node) (*Value, error) {
 		case *ir.AppendStmt:
 			return c.addAppendStmt(call)
 
+		case *ir.GrowStmt:
+			return c.addGrowStmt(call)
+
 		default:
 			return nil, s.Pos().Error("unknown call node: %T", call)
 		}
