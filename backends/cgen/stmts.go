@@ -42,6 +42,9 @@ func (c *CGen) addNode(s ir.Node) (*Value, error) {
 		case *ir.IfStmt:
 			return c.addIf(blk)
 
+		case *ir.SwitchStmt:
+			return c.addSwitch(blk)
+
 		default:
 			return nil, s.Pos().Error("unknown block node: %T", blk)
 		}

@@ -1,9 +1,1 @@
-switch "Hi" do
-  case "a" do
-    print "its a";
-  end
-
-  case "b" do
-    print "its b";
-  end
-end
+print "Hello, World!"; # This is a comment

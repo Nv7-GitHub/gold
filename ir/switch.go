@@ -6,12 +6,17 @@ import (
 )
 
 type SwitchStmt struct {
-	Cond  Node
-	Cases []*SwitchCase
+	Cond    Node
+	Cases   []*SwitchCase
+	Default *DefaultCase
 }
 
 type SwitchCase struct {
 	Cond *Const
+	Body []Node
+}
+
+type DefaultCase struct {
 	Body []Node
 }
 
@@ -33,6 +38,17 @@ func init() {
 		},
 	}
 
+	blockBuilders["default"] = blockBuilder{
+		ParamTyps: []types.Type{},
+		Init: func(b *Builder, pos *tokenizer.Pos, args []Node) (Block, error) {
+			return &DefaultCase{}, nil
+		},
+		Build: func(b *Builder, pos *tokenizer.Pos, blk Block, stmts []Node) error {
+			blk.(*DefaultCase).Body = stmts
+			return nil
+		},
+	}
+
 	blockBuilders["switch"] = blockBuilder{
 		ParamTyps: []types.Type{types.ANY},
 		Init: func(b *Builder, pos *tokenizer.Pos, args []Node) (Block, error) {
@@ -43,27 +59,41 @@ func init() {
 		},
 		Build: func(b *Builder, pos *tokenizer.Pos, blk Block, stmts []Node) error {
 			sw := blk.(*SwitchStmt)
-			cases := make([]*SwitchCase, len(stmts))
-			for i, stmt := range stmts {
+			cases := make([]*SwitchCase, 0, len(stmts)) // Allocate of len(stmts) since it should be around that length
+			var def *DefaultCase = nil
+			for _, stmt := range stmts {
 				// Convert to case
 				blk, ok := stmt.(*BlockNode)
 				if !ok {
 					return stmt.Pos().Error("switch case must only have case statements within")
 				}
 				cs, ok := blk.Block.(*SwitchCase)
-				if !ok {
-					return blk.Pos().Error("switch case must only have case statements within")
+				if ok {
+					// Check type
+					if !cs.Cond.Type().Equal(sw.Cond.Type()) {
+						return blk.Pos().Error("case condition must have the same type as switch condition")
+					}
+
+					// Save
+					cases = append(cases, cs)
+					continue
 				}
 
-				// Check type
-				if !cs.Cond.Type().Equal(sw.Cond.Type()) {
-					return blk.Pos().Error("case condition must have the same type as switch condition")
+				defV, ok := blk.Block.(*DefaultCase)
+				if ok {
+					if def != nil {
+						return blk.Pos().Error("switch can only have one default case")
+					}
+
+					// Save
+					def = defV
+					continue
 				}
 
-				// Save
-				cases[i] = cs
+				return blk.Pos().Error("switch case must only have case or default statements within")
 			}
 			sw.Cases = cases
+			sw.Default = def
 			b.Scope.Pop()
 			return nil
 		},
