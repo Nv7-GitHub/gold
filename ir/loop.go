@@ -21,6 +21,7 @@ func init() {
 		},
 		Build: func(b *Builder, pos *tokenizer.Pos, blk Block, stmts []Node) error {
 			blk.(*WhileStmt).Body = stmts
+			b.Scope.Pop()
 			return nil
 		},
 	}

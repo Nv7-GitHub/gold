@@ -50,6 +50,7 @@ func init() {
 			}
 			blk.(*IfStmt).Body = stmts
 			blk.(*IfStmt).Else = _else
+			b.Scope.Pop()
 			return nil
 		},
 	}

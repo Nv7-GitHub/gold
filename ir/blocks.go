@@ -57,9 +57,6 @@ func (b *Builder) buildBlock(n *parser.BlockStmt) (Node, error) {
 		return nil, err
 	}
 
-	// Pop scope
-	b.Scope.Pop()
-
 	return &BlockNode{
 		Block: c,
 		pos:   n.Pos(),

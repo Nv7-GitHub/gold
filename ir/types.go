@@ -116,6 +116,7 @@ const (
 	ScopeTypeFunction
 	ScopeTypeIf
 	ScopeTypeWhile
+	ScopeTypeSwitch
 )
 
 type Scope struct {
