@@ -1,0 +1,48 @@
+func eval do
+  param ast map{string}int{};
+  param ind int;
+  returns int;
+
+  switch (["type"][ind]ast) do
+    case 0 do # PARSERNUM
+      return (["value"][ind]ast);
+    end
+
+    case 1 do # PARSEROP
+      def lhs int;
+      call eval (ast) (["lhs"][ind]ast) => lhs;
+      def rhs int;
+      call eval (ast) (["rhs"][ind]ast) => rhs;
+
+      def res int;
+      switch (["op"][ind]ast) do
+        case 0 do # OPADD
+          (lhs + rhs) => res;
+        end
+
+        case 1 do # OPSUB
+          (lhs - rhs) => res;
+        end
+
+        case 2 do # OPMUL
+          (lhs * rhs) => res;
+        end
+
+        case 3 do # OPDIV
+          (lhs / rhs) => res;
+        end
+      end
+
+      return (res);
+    end
+
+    default do
+      def error string;
+      def typid string;
+      str (["type"][ind]ast) => typid;
+      concat "unknown ast node type: " (typid) => error;
+      print (error);
+      exit 1;
+    end
+  end
+end

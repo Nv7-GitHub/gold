@@ -175,7 +175,7 @@ func (c *CGen) addMathExpr(s *ir.MathExpr) (*Value, error) {
 	return &Value{
 		Setup:    JoinCode(lhs.Setup, rhs.Setup),
 		Destruct: JoinCode(lhs.Destruct, rhs.Destruct),
-		Code:     fmt.Sprintf("(%s)%s %s (%s)%s", c.GetCType(s.Type()), lhs.Code, s.Op, c.GetCType(s.Type()), rhs.Code),
+		Code:     fmt.Sprintf("((%s)%s %s (%s)%s)", c.GetCType(s.Type()), lhs.Code, s.Op, c.GetCType(s.Type()), rhs.Code),
 		Type:     s.Type(),
 	}, nil
 }

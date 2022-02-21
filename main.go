@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	_ "embed"
 	"fmt"
 	"os"
 	"os/exec"
@@ -11,9 +10,6 @@ import (
 	"github.com/Nv7-Github/gold/backends/cgen"
 	"github.com/Nv7-Github/gold/ir"
 )
-
-//go:embed examples/hello.gold
-var code string
 
 func main() {
 	ir, err := ir.Build(ir.NewDirFS("examples/calculator"), "calculator.gold")

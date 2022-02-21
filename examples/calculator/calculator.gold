@@ -1,179 +1,24 @@
-func isnum do
-  param val string;
-  returns bool;
-
-  def ret bool;
-
-  switch (val) do
-    case "0" do
-      (true) => ret;
-    end
-
-    case "1" do
-      (true) => ret;
-    end
-
-    case "2" do
-      (true) => ret;
-    end
-
-    case "3" do
-      (true) => ret;
-    end
-
-    case "4" do
-      (true) => ret;
-    end
-
-    case "5" do
-      (true) => ret;
-    end
-
-    case "6" do
-      (true) => ret;
-    end
-
-    case "7" do
-      (true) => ret;
-    end
-
-    case "8" do
-      (true) => ret;
-    end
-
-    case "9" do
-      (true) => ret;
-    end
-
-    default do
-      (false) => ret;
-    end
-  end
-
-  return (ret);
-end
-
-func tokenize do # Wrap in function so you can return on error
-  param src string;
-  returns map{string}string{};
-
-  # Tokenize
-  def tokens map{string}string{};
-
-  # Enum (sort of)
-  def TOKENLPAREN string;
-  ("(") => TOKENLPAREN;
-  def TOKENRPAREN string;
-  (")") => TOKENRPAREN;
-  def TOKENNUMBER string;
-  ("num") => TOKENNUMBER;
-  def TOKENOP string;
-  ("op") => TOKENOP;
-
-  def len int;
-  length (src) => len;
-
-  def i int;
-  (0) => i;
-  while (i < len) do
-    switch ([i]src) do
-      case " " do # Ignore spaces
-      end
-
-      case "(" do
-        def tok map{string}string;
-        (TOKENLPAREN) => (["type"]tok);
-        ("(") => (["value"]tok);
-        append (tokens) (tok);
-      end
-
-      case ")" do
-        def tok map{string}string;
-        (TOKENRPAREN) => (["type"]tok);
-        (")") => (["value"]tok);
-        append (tokens) (tok);
-      end
-
-      case "+" do
-        def tok map{string}string;
-        (TOKENOP) => (["type"]tok);
-        ("+") => (["value"]tok);
-        append (tokens) (tok);
-      end
-
-      case "-" do
-        def tok map{string}string;
-        (TOKENOP) => (["type"]tok);
-        ("-") => (["value"]tok);
-        append (tokens) (tok);
-      end
-
-      case "/" do
-        def tok map{string}string;
-        (TOKENOP) => (["type"]tok);
-        ("/") => (["value"]tok);
-        append (tokens) (tok);
-      end
-
-      case "*" do
-        def tok map{string}string;
-        (TOKENOP) => (["type"]tok);
-        ("*") => (["value"]tok);
-        append (tokens) (tok);
-      end
-
-      default do
-        # Is number?
-        def num bool;
-        call isnum ([i]src) => num;
-
-        if (!num) do
-          def error string;
-          concat ("unknown token: ") ([i]src) => error;
-          print (error);
-          exit 1;
-        end
-
-        if (num) do
-          def numval string;
-          ([i]src) => numval;
-
-          while (num) do
-            (i + 1) => i;
-            call isnum ([i]src) => num;
-            if (num) do
-              concat (numval) ([i]src) => numval;
-            end
-            if (!num) do
-              (i - 1) => i;
-            end
-          end
-
-          def tok map{string}string;
-          (TOKENNUMBER) => (["type"]tok);
-          (numval) => (["value"]tok);
-          append (tokens) (tok);
-        end
-      end
-    end
-
-    (i + 1) => i;
-  end
-
-  return (tokens);
-end # End of main fn
+import "tokenize.gold";
+import "ast.gold";
+import "eval.gold";
 
 def src string;
 ("(1 + 1)") => src;
 
+# Tokenize
 def tokens map{string}string{};
 call tokenize (src) => tokens;
 
-def i int;
-(0) => i;
-def length int;
-length (tokens) => length;
-while (i < length) do
-  print (["value"][i]tokens);
-  (i + 1) => i;
-end
+# Gen AST
+def ast map{string}int{};
+call parse (tokens) (ast) 0;
+
+# Eval AST
+def ind int;
+length (ast) => ind;
+(ind - 1) => ind; # Get last index
+
+def out int;
+(0) => out;
+call eval (ast) (ind) => out;
+print (out);

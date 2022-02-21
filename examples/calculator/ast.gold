@@ -1,0 +1,186 @@
+func itoa do
+  param val string;
+  returns int;
+
+  def ret int;
+  (0) => ret;
+  
+  def len int;
+  length (val) => len;
+
+  def i int;
+  (0) => i;
+  while (i < len) do
+    # Convert char to int
+    def c int;
+    switch ([i]val) do
+      case "0" do
+        (0) => c;
+      end
+
+      case "1" do
+        (1) => c;
+      end
+
+      case "2" do
+        (2) => c;
+      end
+
+      case "3" do
+        (3) => c;
+      end
+
+      case "4" do
+        (4) => c;
+      end
+
+      case "5" do
+        (5) => c;
+      end
+
+      case "6" do
+        (6) => c;
+      end
+
+      case "7" do
+        (7) => c;
+      end
+
+      case "8" do
+        (8) => c;
+      end
+
+      case "9" do
+        (9) => c;
+      end
+    end
+
+    # Add to total, do pow
+    def j int;
+    (0) => j;
+    
+    def pow int;
+    (1) => pow;
+    while (j < (len - (i + 1))) do
+      (pow * 10) => pow;
+      (j + 1) => j;
+    end
+
+    (ret + (c * pow)) => ret;
+
+    (i + 1) => i;
+  end
+
+  return (ret);
+end
+
+
+func parse do
+  param tokens map{string}string{};
+  param out map{string}int{};
+  param i int;
+  returns int;
+
+  # Tokens enum
+  def TOKENLPAREN string;
+  ("lparen") => TOKENLPAREN;
+  def TOKENRPAREN string;
+  ("rparen") => TOKENRPAREN;
+  def TOKENNUMBER string;
+  ("num") => TOKENNUMBER;
+  def TOKENOP string;
+  ("op") => TOKENOP;
+
+  # Parser op enum
+  def OPADD int;
+  (0) => OPADD;
+  def OPSUB int;
+  (1) => OPSUB;
+  def OPMUL int;
+  (2) => OPMUL;
+  def OPDIV int;
+  (3) => OPDIV;
+  
+  # Parser node enum
+  def PARSERNUM int;
+  (0) => PARSERNUM;
+  def PARSEROP int;
+  (1) => PARSEROP;
+
+  switch (["type"][i]tokens) do
+    case "lparen" do
+      (i + 1) => i; # Eat lparen
+
+      def lhspos int;
+      length (out) => lhspos;
+
+      call parse (tokens) (out) (i) => i; # Parses lhs
+
+      # Get op
+      def op int;
+      switch (["value"][i]tokens) do
+        case "+" do
+          (OPADD) => op;
+        end
+
+        case "-" do
+          (OPSUB) => op;
+        end
+
+        case "*" do
+          (OPMUL) => op;
+        end
+
+        case "/" do
+          (OPDIV) => op;
+        end
+
+        default do
+          def error string;
+          concat ("unknown token: ") (["value"][i]tokens) => error;
+          print (error);
+          exit 1;
+        end
+      end
+
+      (i + 1) => i; # Eat op
+
+      def rhspos int;
+      length (out) => rhspos;
+      call parse (tokens) (out) (i) => i; # Parses rhs
+      (i + 1) => i; # Eat rparen
+
+      # Result
+      def res map{string}int;
+      (PARSEROP) => (["type"]res);
+      length (out) => (["id"]res);
+      (op) => (["op"]res);
+      (lhspos) => (["lhs"]res);
+      (rhspos) => (["rhs"]res);
+      append (out) (res);
+    end
+
+    case "num" do
+      def num int;
+      call itoa (["value"][i]tokens) => num;
+
+      # Eat token
+      (i + 1) => i;
+
+      def node map{string}int;
+      (PARSERNUM) => (["type"]node);
+      length (out) => (["id"]node);
+      (num) => (["value"]node);
+      append (out) (node);
+    end
+
+    default do
+      def error string;
+      concat "unknown token type: " (["type"][i]tokens) => error;
+      print (error);
+      exit 1;
+    end
+  end
+
+  return (i);
+end

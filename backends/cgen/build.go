@@ -9,6 +9,28 @@ import (
 func (c *CGen) Build() (string, error) {
 	body := &strings.Builder{}
 
+	// Add function definitions
+	for _, fn := range c.ir.Funcs {
+		// Build func starter
+		body.WriteString(c.GetCType(fn.RetType))
+		body.WriteString(" ")
+		body.WriteString(Namespace)
+		body.WriteString(fn.Name)
+		body.WriteString("(")
+		for i, par := range fn.Params {
+			body.WriteString(c.GetCType(par.Type))
+			body.WriteString(" ")
+			body.WriteString(Namespace)
+			body.WriteString(par.Name)
+			body.WriteString(strconv.Itoa(par.VarID))
+			if i != len(fn.Params)-1 {
+				body.WriteString(", ")
+			}
+		}
+		body.WriteString(");\n")
+	}
+	body.WriteString("\n")
+
 	// Add functions
 	for _, fn := range c.ir.Funcs {
 		// Build func starter
