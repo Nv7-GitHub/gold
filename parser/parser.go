@@ -33,6 +33,11 @@ func (e *ExprStmt) Pos() *tokenizer.Pos {
 	return e.Expr.Pos()
 }
 
+type NotExpr struct {
+	BasicNode
+	Val Node
+}
+
 func (p *Parser) Parse() error {
 	for !p.tok.IsEnd() {
 		n, err := p.parseStmt()
@@ -66,6 +71,20 @@ func (p *Parser) parseExpr() (Node, error) {
 			return p.parseIndex()
 		}
 		return nil, p.getError(p.tok.CurrTok().Pos, "unknown token: %s", p.tok.CurrTok().Value)
+
+	case tokenizer.Not:
+		pos := p.tok.CurrTok().Pos
+		p.tok.Eat()
+		val, err := p.parseExpr()
+		if err != nil {
+			return nil, err
+		}
+		return &NotExpr{
+			BasicNode: BasicNode{
+				pos: pos,
+			},
+			Val: val,
+		}, nil
 
 	default:
 		return nil, p.getError(p.tok.CurrTok().Pos, "unknown token: %s", p.tok.CurrTok().Value)

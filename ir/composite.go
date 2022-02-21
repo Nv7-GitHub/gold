@@ -74,6 +74,12 @@ type GrowStmt struct {
 
 func (g *GrowStmt) Type() types.Type { return types.NULL }
 
+type LengthStmt struct {
+	Value Node
+}
+
+func (l *LengthStmt) Type() types.Type { return types.INT }
+
 func init() {
 	builders["append"] = nodeBuilder{
 		ParamTyps: []types.Type{types.ARRAY, types.ANY},
@@ -96,6 +102,18 @@ func init() {
 			return &GrowStmt{
 				Array: args[0],
 				Size:  args[1],
+			}, nil
+		},
+	}
+
+	builders["length"] = nodeBuilder{
+		ParamTyps: []types.Type{types.ANY},
+		Build: func(b *Builder, pos *tokenizer.Pos, args []Node) (Call, error) {
+			if !types.ARRAY.Equal(args[0].Type()) && !types.STRING.Equal(args[0].Type()) {
+				return nil, args[0].Pos().Error("expected string or array in length, got %s", args[0].Type().String())
+			}
+			return &LengthStmt{
+				Value: args[0],
 			}, nil
 		},
 	}

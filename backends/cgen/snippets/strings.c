@@ -40,6 +40,7 @@ string* string_concat(string* a, string* b) {
   string* c = string_new("", 0);
   c->is_static = false;
   c->data = data;
+  c->len = a->len + b->len;
   return c;
 }
 
@@ -48,4 +49,13 @@ bool string_equal(string* a, string* b) {
     return false;
   }
   return memcmp(a->data, b->data, a->len) == 0;
+}
+
+string* string_index(string* a, int index) {
+  char* data = malloc(1);
+  data[0] = a->data[index];
+  string* s = string_new("0", 1);
+  s->is_static = false;
+  s->data = data;
+  return s;
 }

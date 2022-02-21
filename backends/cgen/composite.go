@@ -55,6 +55,32 @@ func (c *CGen) addIndexExpr(s *ir.IndexExpr) (*Value, error) {
 		return c.addMapGet(m, k, s.Value.Type().(*types.MapType))
 	}
 
+	// Is string?
+	if types.STRING.Equal(s.Value.Type()) {
+		v, err := c.addNode(s.Value)
+		if err != nil {
+			return nil, err
+		}
+		ind, err := c.addNode(s.Index)
+		if err != nil {
+			return nil, err
+		}
+		c.RequireSnippet("strings.c")
+		varname := fmt.Sprintf("ind_%d", c.tmpcnt)
+		c.tmpcnt++
+		code := fmt.Sprintf("string* %s = string_index(%s, %s);", varname, v.Code, ind.Code)
+		c.scope.AddFree(c.GetFreeCode(types.STRING, varname))
+
+		return &Value{
+			Setup:    JoinCode(v.Setup, ind.Setup, code),
+			Destruct: JoinCode(v.Destruct, ind.Destruct),
+			Code:     varname,
+			Type:     types.STRING,
+			CanGrab:  true,
+			Grab:     c.GetGrabCode(types.STRING, varname),
+		}, nil
+	}
+
 	v, err := c.addNode(s.Value)
 	if err != nil {
 		return nil, err
@@ -64,7 +90,6 @@ func (c *CGen) addIndexExpr(s *ir.IndexExpr) (*Value, error) {
 		return nil, err
 	}
 
-	// Assumes arrays, TODO: support maps
 	name := fmt.Sprintf("(*((%s*)array_get(%s, %s)))", c.GetCType(s.Type()), v.Code, ind.Code)
 	grabCode := ""
 	_, exists := dynamicTyps[s.Type().BasicType()]
@@ -202,5 +227,44 @@ func (c *CGen) addMapGet(m *Value, k *Value, mapTyp *types.MapType) (*Value, err
 		Code:     name,
 		Grab:     grabCode,
 		CanGrab:  exists,
+	}, nil
+}
+
+func (c *CGen) addLen(s *ir.LengthStmt) (*Value, error) {
+	v, err := c.addNode(s.Value)
+	if err != nil {
+		return nil, err
+	}
+	return &Value{
+		Setup:    v.Setup,
+		Destruct: v.Destruct,
+
+		Type: types.INT,
+		Code: fmt.Sprintf("%s->len", v.Code),
+	}, nil
+}
+
+func (c *CGen) addConcat(s *ir.StringConcat) (*Value, error) {
+	l, err := c.addNode(s.Lhs)
+	if err != nil {
+		return nil, err
+	}
+	r, err := c.addNode(s.Rhs)
+	if err != nil {
+		return nil, err
+	}
+	c.RequireSnippet("strings.c")
+	varname := fmt.Sprintf("ind_%d", c.tmpcnt)
+	c.tmpcnt++
+	code := fmt.Sprintf("string* %s = string_concat(%s, %s);", varname, l.Code, r.Code)
+	c.scope.AddFree(c.GetFreeCode(types.STRING, varname))
+
+	return &Value{
+		Setup:    JoinCode(l.Setup, r.Setup, code),
+		Destruct: JoinCode(l.Destruct, r.Destruct),
+		Code:     varname,
+		Type:     types.STRING,
+		CanGrab:  true,
+		Grab:     c.GetGrabCode(types.STRING, varname),
 	}, nil
 }

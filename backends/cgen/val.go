@@ -23,6 +23,16 @@ func (c *CGen) addConst(val *ir.Const) (*Value, error) {
 			Type: types.INT,
 		}, nil
 
+	case types.BOOL:
+		code := "true"
+		if !val.Value.(bool) {
+			code = "false"
+		}
+		return &Value{
+			Code: code,
+			Type: types.INT,
+		}, nil
+
 	case types.STRING:
 		c.RequireSnippet("strings.c")
 		varname := fmt.Sprintf("%sstring_%d", Namespace, c.tmpcnt)

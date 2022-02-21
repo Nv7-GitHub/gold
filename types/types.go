@@ -54,7 +54,7 @@ type ArrayType struct {
 	ElemType Type
 }
 
-func NewArrayType(elemType BasicType) *ArrayType {
+func NewArrayType(elemType Type) *ArrayType {
 	return &ArrayType{
 		ElemType: elemType,
 	}

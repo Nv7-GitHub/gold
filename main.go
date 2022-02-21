@@ -8,16 +8,15 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/Nv7-Github/gold/ir"
-
 	"github.com/Nv7-Github/gold/backends/cgen"
+	"github.com/Nv7-Github/gold/ir"
 )
 
 //go:embed examples/hello.gold
 var code string
 
 func main() {
-	ir, err := ir.Build(ir.NewDirFS("examples"), "hello.gold")
+	ir, err := ir.Build(ir.NewDirFS("examples/calculator"), "calculator.gold")
 	if err != nil {
 		fmt.Println(err)
 		return

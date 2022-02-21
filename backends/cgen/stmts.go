@@ -31,10 +31,19 @@ func (c *CGen) addNode(s ir.Node) (*Value, error) {
 		case *ir.GrowStmt:
 			return c.addGrowStmt(call)
 
+		case *ir.LengthStmt:
+			return c.addLen(call)
+
+		case *ir.StringConcat:
+			return c.addConcat(call)
+
 		case *ir.ImportCall:
 			return &Value{
 				Type: types.NULL,
 			}, nil
+
+		case *ir.ExitStmt:
+			return c.addExit(call)
 
 		default:
 			return nil, s.Pos().Error("unknown call node: %T", call)
@@ -75,6 +84,18 @@ func (c *CGen) addNode(s ir.Node) (*Value, error) {
 
 	case *ir.StringEq:
 		return c.addStringEq(n)
+
+	case *ir.Not:
+		v, err := c.addNode(n.Val)
+		if err != nil {
+			return nil, err
+		}
+		return &Value{
+			Setup:    v.Setup,
+			Destruct: v.Destruct,
+			Type:     types.BOOL,
+			Code:     "!" + v.Code,
+		}, nil
 
 	default:
 		return nil, s.Pos().Error("unknown node: %T", n)

@@ -13,11 +13,16 @@ func ParseType(typ string) (Type, error) {
 			if typ == v { // Basic type
 				return k, nil
 			}
-
-			if typ == v+"{}" { // Array
-				return NewArrayType(k), nil
-			}
 		}
+	}
+
+	// Array
+	if strings.HasSuffix(typ, "{}") {
+		typ, err := ParseType(typ[:len(typ)-2])
+		if err != nil {
+			return nil, err
+		}
+		return NewArrayType(typ), nil
 	}
 
 	// Map or nothing

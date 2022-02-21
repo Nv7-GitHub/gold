@@ -1,5 +1,10 @@
 print "Hello, World!"; # This is a comment
 
+def abc string;
+concat "a" "b" => abc;
+concat (abc) "c" => abc;
+print abc;
+
 func add do
   param a int;
   param b int;

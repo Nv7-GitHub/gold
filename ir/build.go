@@ -70,6 +70,19 @@ func (b *Builder) buildNode(node parser.Node, inexpr ...bool) (Node, error) {
 			IsIdentifier: n.IsIdentifier,
 		}, nil
 
+	case *parser.NotExpr:
+		v, err := b.buildNode(n.Val, true)
+		if err != nil {
+			return nil, err
+		}
+		if !types.BOOL.Equal(v.Type()) {
+			return nil, n.Pos().Error("invalid type for not: %s, expected bool", v.Type())
+		}
+		return &Not{
+			pos: n.Pos(),
+			Val: v,
+		}, nil
+
 	case *parser.AssignStmt:
 		return b.buildAssignStmt(n)
 
@@ -103,6 +116,19 @@ func (c *Const) Type() types.Type {
 
 func (c *Const) Pos() *tokenizer.Pos {
 	return c.pos
+}
+
+type Not struct {
+	pos *tokenizer.Pos
+	Val Node
+}
+
+func (n *Not) Pos() *tokenizer.Pos {
+	return n.pos
+}
+
+func (n *Not) Type() types.Type {
+	return types.BOOL
 }
 
 type VariableExpr struct {

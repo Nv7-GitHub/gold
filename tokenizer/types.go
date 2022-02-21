@@ -47,6 +47,7 @@ const (
 	Operator
 	Operation
 	Parenthesis
+	Not
 	End
 )
 
@@ -59,6 +60,7 @@ var tokenNames = map[TokenType]string{
 	Parenthesis:   "Parenthesis",
 	End:           "End",
 	Operation:     "Operation",
+	Not:           "Not",
 }
 
 func (t TokenType) String() string {

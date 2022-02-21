@@ -41,11 +41,14 @@ func init() {
 		Build: func(b *Builder, pos *tokenizer.Pos, blk Block, stmts []Node) error {
 			var _else []Node
 			for i, stmt := range stmts {
-				_, ok := stmt.(*CallNode).Call.(*ElseStmt)
+				v, ok := stmt.(*CallNode)
 				if ok {
-					_else = stmts[i+1:]
-					stmts = stmts[:i]
-					break
+					_, ok = v.Call.(*ElseStmt)
+					if ok {
+						_else = stmts[i+1:]
+						stmts = stmts[:i]
+						break
+					}
 				}
 			}
 			blk.(*IfStmt).Body = stmts

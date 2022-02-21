@@ -50,6 +50,14 @@ func (t *Tokenizer) Tokenize() {
 		case '#':
 			t.eatComment()
 
+		case '!':
+			t.Tokens = append(t.Tokens, Token{
+				Type:  Not,
+				Value: string(c),
+				Pos:   t.stream.CodePos(),
+			})
+			t.stream.Eat(1)
+
 		case 'd':
 			if t.stream.Peek(1) == 'o' {
 				t.Tokens = append(t.Tokens, Token{

@@ -208,12 +208,15 @@ func init() {
 				return nil, pos.Error("return statement outside of function")
 			}
 			var retTyp types.Type
+			var val Node
 			switch len(args) {
 			case 0:
 				retTyp = types.NULL
+				val = nil
 
 			case 1:
 				retTyp = args[0].Type()
+				val = args[0]
 
 			default:
 				return nil, pos.Error("expected 0 or 1 arguments")
@@ -221,10 +224,10 @@ func init() {
 
 			fn := b.Funcs[b.Scope.GetScopeByType(ScopeTypeFunction).FuncName]
 			if !retTyp.Equal(fn.RetType) {
-				return nil, pos.Error("invalid return type: expected %s, got %s", fn.RetType.String(), args[0].Type().String())
+				return nil, pos.Error("invalid return type: expected %s, got %s", fn.RetType.String(), retTyp.String())
 			}
 			return &ReturnStmt{
-				Value: args[0],
+				Value: val,
 			}, nil
 		},
 	}

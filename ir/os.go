@@ -11,6 +11,12 @@ type PrintStmt struct {
 
 func (p *PrintStmt) Type() types.Type { return types.NULL }
 
+type ExitStmt struct {
+	Status Node
+}
+
+func (e *ExitStmt) Type() types.Type { return types.NULL }
+
 func init() {
 	builders["print"] = nodeBuilder{
 		ParamTyps: []types.Type{types.ANY},
@@ -28,6 +34,15 @@ func init() {
 			}
 			return &PrintStmt{
 				Arg: val,
+			}, nil
+		},
+	}
+
+	builders["exit"] = nodeBuilder{
+		ParamTyps: []types.Type{types.INT},
+		Build: func(b *Builder, pos *tokenizer.Pos, args []Node) (Call, error) {
+			return &ExitStmt{
+				Status: args[0],
 			}, nil
 		},
 	}

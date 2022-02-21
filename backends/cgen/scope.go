@@ -22,7 +22,7 @@ func (s *Stack) Push() {
 	s.scopes = append(s.scopes, scope{toFree: make([]string, 0)})
 }
 
-func (s *Stack) Pop() string {
+func (s *Stack) Code() string {
 	code := &strings.Builder{}
 	sc := s.scopes[len(s.scopes)-1]
 	for i, line := range sc.toFree {
@@ -31,8 +31,13 @@ func (s *Stack) Pop() string {
 			code.WriteString("\n")
 		}
 	}
-	s.scopes = s.scopes[:len(s.scopes)-1]
 	return code.String()
+}
+
+func (s *Stack) Pop() string {
+	code := s.Code()
+	s.scopes = s.scopes[:len(s.scopes)-1]
+	return code
 }
 
 func (s *Stack) AddFree(code string) {

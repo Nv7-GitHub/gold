@@ -97,6 +97,7 @@ func (c *CGen) GetFreeCode(typ types.Type, varName string) string {
 				elFree := c.GetFreeCode(elType, fmt.Sprintf("*((%s*)array_get(arr, i))", c.GetCType(elType)))
 				loop := fmt.Sprintf("for (int i = 0; i < arr->len; i++) {\n\t%s\n}", elFree)
 				fmt.Fprintf(c.types, "void array_free_%s(array* arr) {\n%s\n}\n", name, Indent(loop))
+				c.freeFns[name] = empty{}
 			}
 			freeFn = "array_free_" + name
 		}
@@ -111,7 +112,7 @@ func (c *CGen) GetFreeCode(typ types.Type, varName string) string {
 }
 
 func (c *CGen) GetGrabCode(typ types.Type, varName string) string {
-	switch typ {
+	switch typ.BasicType() {
 	case types.STRING, types.ARRAY, types.MAP:
 		return fmt.Sprintf("%s->refs++;", varName)
 

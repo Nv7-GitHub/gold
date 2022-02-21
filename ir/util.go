@@ -48,9 +48,26 @@ func getStringCast(b *Builder, pos *tokenizer.Pos, args []Node) (Call, error) {
 	}, nil
 }
 
+type StringConcat struct {
+	Lhs Node
+	Rhs Node
+}
+
+func (s *StringConcat) Type() types.Type { return types.STRING }
+
 func init() {
 	builders["str"] = nodeBuilder{
 		ParamTyps: []types.Type{types.ANY},
 		Build:     getStringCast,
+	}
+
+	builders["concat"] = nodeBuilder{
+		ParamTyps: []types.Type{types.STRING, types.STRING},
+		Build: func(b *Builder, pos *tokenizer.Pos, args []Node) (Call, error) {
+			return &StringConcat{
+				Lhs: args[0],
+				Rhs: args[1],
+			}, nil
+		},
 	}
 }
