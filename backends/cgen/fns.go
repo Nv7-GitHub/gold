@@ -12,7 +12,11 @@ func (c *CGen) addCall(s *ir.CallStmt) (*Value, error) {
 	setup := &strings.Builder{}
 	destruct := &strings.Builder{}
 	code := &strings.Builder{}
-	fmt.Fprintf(code, "%s%s(", Namespace, s.Fn)
+	fn := c.ir.Funcs[s.Fn]
+	tmp := c.tmpcnt
+	c.tmpcnt++
+	varname := fmt.Sprintf("call_ret%d", tmp)
+	fmt.Fprintf(code, "%s %s = %s%s(", c.GetCType(fn.RetType), varname, Namespace, s.Fn)
 
 	for i, par := range s.Args {
 		cod, err := c.addNode(par)
@@ -36,10 +40,15 @@ func (c *CGen) addCall(s *ir.CallStmt) (*Value, error) {
 
 	code.WriteString(")")
 
+	_, exists := dynamicTyps[fn.RetType.BasicType()]
+	if exists {
+		c.scope.AddFree(c.GetFreeCode(fn.RetType, varname))
+	}
+
 	return &Value{
-		Setup:    setup.String(),
+		Setup:    JoinCode(setup.String(), code.String()),
 		Destruct: destruct.String(),
-		Code:     code.String(),
+		Code:     varname,
 		Type:     s.Type(),
 	}, nil
 }
@@ -49,10 +58,14 @@ func (c *CGen) addReturn(s *ir.ReturnStmt) (*Value, error) {
 	if err != nil {
 		return nil, err
 	}
+	destruct := v.Destruct
+	if v.CanGrab {
+		destruct = JoinCode(destruct, v.Grab)
+	}
 
 	return &Value{
 		Setup:    v.Setup,
-		Destruct: v.Destruct,
+		Destruct: destruct,
 		Code:     fmt.Sprintf("return %s", v.Code),
 		Type:     types.NULL,
 	}, nil
