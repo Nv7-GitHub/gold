@@ -7,6 +7,10 @@ type Tokenizer struct {
 	pos    int
 }
 
+func (t *Tokenizer) Filename() string {
+	return t.stream.codePos.Filename
+}
+
 func NewTokenizer(stream *Stream) *Tokenizer {
 	return &Tokenizer{
 		stream: stream,

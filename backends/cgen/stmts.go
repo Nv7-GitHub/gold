@@ -2,6 +2,7 @@ package cgen
 
 import (
 	"github.com/Nv7-Github/gold/ir"
+	"github.com/Nv7-Github/gold/types"
 )
 
 func (c *CGen) addNode(s ir.Node) (*Value, error) {
@@ -29,6 +30,11 @@ func (c *CGen) addNode(s ir.Node) (*Value, error) {
 
 		case *ir.GrowStmt:
 			return c.addGrowStmt(call)
+
+		case *ir.ImportCall:
+			return &Value{
+				Type: types.NULL,
+			}, nil
 
 		default:
 			return nil, s.Pos().Error("unknown call node: %T", call)

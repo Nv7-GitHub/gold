@@ -16,12 +16,16 @@ type nodeBuilder struct {
 var builders = make(map[string]nodeBuilder)
 
 func (b *Builder) Build(p *parser.Parser) (*IR, error) {
+	b.alreadyImported[p.Filename()] = empty{} // Already imported
+
+	// Function pass
 	err := b.functionPass(p)
 	if err != nil {
 		return nil, err
 	}
 	b.Scope.PushScope(NewScope(ScopeTypeGlobal))
 
+	// Build top level
 	out := make([]Node, len(p.Nodes))
 	for i, stmt := range p.Nodes {
 		out[i], err = b.buildNode(stmt)
@@ -37,8 +41,8 @@ func (b *Builder) Build(p *parser.Parser) (*IR, error) {
 
 	return &IR{
 		Funcs:     b.Funcs,
-		Nodes:     out,
-		Variables: b.Variables,
+		Nodes:     append(b.TopLevel, out...),
+		Variables: *b.Variables,
 	}, nil
 }
 

@@ -11,6 +11,10 @@ type Parser struct {
 	Nodes []Node
 }
 
+func (p *Parser) Filename() string {
+	return p.tok.Filename()
+}
+
 func (p *Parser) getError(pos *tokenizer.Pos, format string, args ...interface{}) error {
 	return fmt.Errorf("%s: %s", pos, fmt.Sprintf(format, args...))
 }

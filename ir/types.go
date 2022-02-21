@@ -66,16 +66,26 @@ func (b *BlockNode) Type() types.Type {
 	return types.NULL
 }
 
+type empty struct{}
+
 type Builder struct {
 	Scope     *ScopeStack
-	Variables []*Variable
+	Variables *[]*Variable
 	Funcs     map[string]*Func
+	TopLevel  []Node
+
+	fs              FS
+	alreadyImported map[string]empty
 }
 
-func NewBuilder() *Builder {
+func NewBuilder(fs FS) *Builder {
+	vars := make([]*Variable, 0)
 	return &Builder{
-		Scope:     NewScopeStack(),
-		Variables: make([]*Variable, 0),
+		Scope:           NewScopeStack(),
+		Variables:       &vars,
+		TopLevel:        make([]Node, 0),
+		fs:              fs,
+		alreadyImported: make(map[string]empty),
 	}
 }
 

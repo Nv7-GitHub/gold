@@ -43,11 +43,11 @@ func init() {
 
 			// Save
 			v := &Variable{
-				ID:   len(b.Variables),
+				ID:   len(*b.Variables),
 				Name: name.Value.(string),
 				Type: t,
 			}
-			b.Variables = append(b.Variables, v)
+			*b.Variables = append(*b.Variables, v)
 			b.Scope.Curr().AddVar(v)
 			return &DefCall{
 				Variable: v.ID,
