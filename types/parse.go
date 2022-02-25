@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// int, string, float, int[], map[string]int, etc.
+// int, string, float, int{}, map{string}int, etc.
 func ParseType(typ string) (Type, error) {
 	for k, v := range basicTypeNames {
 		// Either array or basic type
